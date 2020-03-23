@@ -20,7 +20,8 @@ const defaultLayoutProps = {
   height: 0.15,
   opacity: 1.0,
   delay: 0,
-  scale: 1.0
+  scale: 1.0,
+  stacked: false
 };
 
 const layoutProps = state => {
@@ -34,7 +35,8 @@ const renderStack = (idx, pos, numCards) => {
   return layoutProps({
     customElevation: Math.min((numCards - idx) * 5, FULL_STACK_HEIGHT),
     zIndex: numCards - idx,
-    pos: pos
+    pos: pos,
+    stacked: idx !== 0
   });
 };
 
@@ -72,8 +74,11 @@ const renderDealt = (idx, state, numCards) => {
   }
 };
 
-const renderIdle = (idx, numCards) => {
-  return renderStack(idx, { x: 0.1, y: 0.15 }, numCards);
+const renderIdle = (idx, state, numCards) => {
+  return {
+    ...renderStack(idx, { x: 0.1, y: 0.15 }, numCards),
+    delay: state.previousState ? (14 - idx) * 0.01 + 0.02 * Math.random() : 0
+  };
 };
 
 const renderGive = (idx, state, numCards) => {
@@ -86,20 +91,22 @@ const renderGive = (idx, state, numCards) => {
       pos: { x: 0.35, y: 0.5 },
       flipped: false,
       scale: 1.5,
-      zIndex: 51,
+      zIndex: 3,
       delay: (idx - idx0) * 0.05,
       customElevation: 100,
       rPos: { x: layout.rPos.x * 1.5, y: 0 }
     };
   } else {
-    return { ...layout, opacity: 0.1 };
+    let opacity = 0.1;
+    if (layout.stacked) opacity = 0;
+    return { ...layout, opacity: opacity };
   }
 };
 
 const renderLayout = (state, idx, numCards) => {
   switch (state.name) {
     case "idle":
-      return renderIdle(idx, numCards);
+      return renderIdle(idx, state, numCards);
     case "dealt":
       return renderDealt(idx, state, numCards);
     case "give":

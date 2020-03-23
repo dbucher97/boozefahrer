@@ -30,7 +30,11 @@ const randomCards = lowest => {
 
 const App = () => {
   const [cards, setCards] = useState(randomCards(4));
-  const [adv, setAdv] = useState(0);
+  const [users, setUser] = useState([
+    { name: "David" },
+    { name: "Stefan" },
+    { name: "Kai" }
+  ]);
 
   const handleOnKeyPress = e => {
     if (e.key === "Enter") setCards(randomCards(4));
@@ -40,7 +44,7 @@ const App = () => {
 
   return (
     <div className="container">
-      <GameField faces={cards} advance={adv} />
+      <GameField faces={cards} users={users} />
     </div>
   );
 };

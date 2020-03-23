@@ -1,0 +1,38 @@
+.user-container {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #344f5a;
+  color: white;
+  /* filter: drop-shadow(0 0 30px #00000011); */
+  /* box-shadow: 0px 20px 100px -70px rgba(0, 0, 0, 1); */
+  box-shadow: 0 4px 40px -20px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  transition: transform 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.user-info-container {
+  position: relative;
+  border-right: 2px solid;
+  width: 150px;
+  height: 100%;
+}
+.user-info-inner-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  width: 110px;
+  text-align: center;
+}
+
+.user-title {
+  font-size: 20pt;
+  font-weight: 600;
+}
+
+.user-info {
+  font-size: 14pt;
+  font-weight: 400;
+}

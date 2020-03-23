@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import Card from "../Card/Card";
+import User from "../User/User";
 import useEventListener from "../../util/EventListener";
 
 /* States
@@ -10,7 +11,7 @@ import useEventListener from "../../util/EventListener";
  * GIVE: needs [rowsPlayed]
  */
 
-const GameField = ({ faces, users, advance }) => {
+const GameField = ({ faces, users }) => {
   const [state, setState] = useState({ name: "idle" });
 
   const handleOnKeyPress = e => {
@@ -20,11 +21,15 @@ const GameField = ({ faces, users, advance }) => {
           setState({ name: "dealt", rowsPlayed: 0, previousState: state.name });
           break;
         case "dealt":
-          setState({
-            name: "give",
-            rowsPlayed: state.rowsPlayed,
-            previousState: state.name
-          });
+          if (state.rowsPlayed == 5) {
+            setState({ name: "idle", previousState: state.name });
+          } else {
+            setState({
+              name: "give",
+              rowsPlayed: state.rowsPlayed,
+              previousState: state.name
+            });
+          }
           break;
         case "give":
           setState({
@@ -49,6 +54,17 @@ const GameField = ({ faces, users, advance }) => {
             idx={idx}
             gamestate={state}
             numCards={faces.length}
+          />
+        );
+      })}
+      {users.map((item, idx) => {
+        return (
+          <User
+            idx={idx}
+            key={idx}
+            user={item}
+            total={users.length}
+            gamestate={state}
           />
         );
       })}
