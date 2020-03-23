@@ -3,48 +3,36 @@ import React, { useState } from "react";
 import Card from "../Card/Card";
 import useEventListener from "../../util/EventListener";
 
+/* States
+ *
+ * IDLE: no further options so far
+ * DEALT: needs [rowsPlayed]
+ * GIVE: needs [rowsPlayed]
+ */
+
 const GameField = ({ faces, users, advance }) => {
   const [state, setState] = useState({ name: "idle" });
 
-  const initTransitionToDealt = () => {
-    const tc = 100;
-    for (let i = 0; i < 16; i++) {
-      setTimeout(() => {
-        setState({
-          name: "dealt",
-          rowsPlayed: 0,
-          transition: { name: "draw", to: i }
-        });
-      }, i * tc);
-    }
-    setTimeout(() => {
-      setState({ name: "dealt", rowsPlayed: 0 });
-    }, 16 * tc);
-  };
-
-  const initTransitionFlip = rowsPlayed => {
-    const tc = 50;
-    for (let i = 0; i < rowsPlayed; i++) {
-      setTimeout(() => {
-        setState({
-          name: "dealt",
-          rowsPlayed: rowsPlayed,
-          transition: { name: "flip", to: i }
-        });
-      }, i * tc);
-    }
-    setTimeout(() => {
-      setState({ name: "dealt", rowsPlayed: rowsPlayed });
-    }, rowsPlayed * tc);
-  };
-
   const handleOnKeyPress = e => {
     if (e.key === " " && state.transition == null) {
-      if (state.name === "idle") {
-        initTransitionToDealt();
-      } else if (state.name === "dealt") {
-        initTransitionFlip(state.rowsPlayed + 1);
-        // setState({ name: "dealt", rowsPlayed: state.rowsPlayed + 1 });
+      switch (state.name) {
+        case "idle":
+          setState({ name: "dealt", rowsPlayed: 0, previousState: state.name });
+          break;
+        case "dealt":
+          setState({
+            name: "give",
+            rowsPlayed: state.rowsPlayed,
+            previousState: state.name
+          });
+          break;
+        case "give":
+          setState({
+            name: "dealt",
+            rowsPlayed: state.rowsPlayed + 1,
+            previousState: state.name
+          });
+          break;
       }
     }
   };

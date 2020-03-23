@@ -17,7 +17,10 @@ const defaultLayoutProps = {
   rPos: { x: 0, y: 0 },
   width: null,
   zIndex: 0,
-  height: 0.15
+  height: 0.15,
+  opacity: 1.0,
+  delay: 0,
+  scale: 1.0
 };
 
 const layoutProps = state => {
@@ -28,16 +31,14 @@ const layoutProps = state => {
 };
 
 const renderStack = (idx, pos, numCards) => {
-  const height = FULL_STACK_HEIGHT / (VISIBLE_IN_STACK - 1);
-  const num = Math.floor((VISIBLE_IN_STACK - 1) * (numCards / 54));
   return layoutProps({
-    customElevation: Math.max((num - idx) * height, 0),
-    zIndex: Math.max(num - idx, 0),
+    customElevation: Math.min((numCards - idx) * 5, FULL_STACK_HEIGHT),
+    zIndex: numCards - idx,
     pos: pos
   });
 };
 
-const renderPyramid = (idx, rowsPlayed, { transition }) => {
+const renderPyramid = (idx, state) => {
   const row = Math.floor(0.5 + 0.5 * Math.sqrt(1 + 8 * idx));
   const idx0 = (row * (row - 1)) / 2;
   const pos = {
@@ -48,34 +49,26 @@ const renderPyramid = (idx, rowsPlayed, { transition }) => {
     x: 1.15 * (idx - idx0 - row / 2),
     y: 1.1 * (row - 1)
   };
-  let flipped = false;
-  if (row < rowsPlayed) {
-    flipped = true;
-  } else if (row === rowsPlayed) {
-    if (transition && transition.name === "flip") {
-      flipped = idx - idx0 <= transition.to;
-    } else {
-      flipped = true;
-    }
+  let transition;
+  if (state.previousState === "idle") {
+    transition = i => i * 0.05;
+  } else {
+    transition = i => (row - 1 + idx0 - i) * 0.03;
   }
-  return layoutProps({ rPos, pos, flipped: !flipped });
+  return layoutProps({
+    zIndex: 0,
+    rPos,
+    pos,
+    flipped: row > state.rowsPlayed,
+    delay: transition(idx)
+  });
 };
 
-const renderDealt = (idx, rowsPlayed, numCards, { transition }) => {
-  let to = 15;
-  let zI = 0;
-  if (transition && transition.name === "draw") {
-    to = transition.to;
-    if (idx < to && idx > to - 3) zI = numCards + 1 + (3 - idx + to);
-  }
-  if (idx < to) {
-    return {
-      ...renderPyramid(idx, rowsPlayed, { transition }),
-      zIndex: zI,
-      customElevation: zI
-    };
+const renderDealt = (idx, state, numCards) => {
+  if (idx < 15) {
+    return renderPyramid(idx, state);
   } else {
-    return renderStack(idx - to, { x: 0.1, y: 0.15 }, numCards - 15);
+    return renderStack(idx - 15, { x: 0.1, y: 0.15 }, numCards - 15);
   }
 };
 
@@ -83,13 +76,34 @@ const renderIdle = (idx, numCards) => {
   return renderStack(idx, { x: 0.1, y: 0.15 }, numCards);
 };
 
+const renderGive = (idx, state, numCards) => {
+  const row = Math.floor(0.5 + 0.5 * Math.sqrt(1 + 8 * idx));
+  const idx0 = (row * (row - 1)) / 2;
+  const layout = renderDealt(idx, state, numCards);
+  if (row === state.rowsPlayed + 1) {
+    return {
+      ...layout,
+      pos: { x: 0.35, y: 0.5 },
+      flipped: false,
+      scale: 1.5,
+      zIndex: 51,
+      delay: (idx - idx0) * 0.05,
+      customElevation: 100,
+      rPos: { x: layout.rPos.x * 1.5, y: 0 }
+    };
+  } else {
+    return { ...layout, opacity: 0.1 };
+  }
+};
+
 const renderLayout = (state, idx, numCards) => {
-  if (state.name === "idle") {
-    return renderIdle(idx, numCards);
-  } else if (state.name === "dealt") {
-    return renderDealt(idx, state.rowsPlayed, numCards, {
-      transition: state.transition
-    });
+  switch (state.name) {
+    case "idle":
+      return renderIdle(idx, numCards);
+    case "dealt":
+      return renderDealt(idx, state, numCards);
+    case "give":
+      return renderGive(idx, state, numCards);
   }
 };
 
@@ -111,14 +125,16 @@ const Card = ({ idx, face, gamestate, onClick, numCards }) => {
     let x = layout.pos.x * width + layout.absPos.x + w * layout.rPos.x - w / 2;
     let y = layout.pos.y * height + layout.absPos.y + h * layout.rPos.y - h / 2;
     let elev = elevation + layout.customElevation;
-    let scale = 1 + elevation / 200;
-    const style = {
+    let scale = (1 + elevation / 200) * layout.scale;
+
+    let style = {
       width: w,
       height: h,
       transform: `translate3D(${x}px, ${y}px, ${elev}px) scale(${scale}) rotateY(${rotate}deg)`,
       cursor: layout.clickable ? "pointer" : "default",
       display: layout.display ? "block" : "none",
-      zIndex: layout.zIndex
+      zIndex: layout.zIndex,
+      transitionDelay: `${layout.delay}s`
     };
     return style;
   };
@@ -131,8 +147,18 @@ const Card = ({ idx, face, gamestate, onClick, numCards }) => {
       onMouseLeave={() => (layout.clickable ? setElevation(0) : null)}
       onClick={layout.clickable ? onClick : null}
     >
-      <img className="card" src={Cards[face]} alt="" />
-      <img className="card card-back" src={Cards.RED_BACK} alt="" />
+      <img
+        style={layout.flipped ? {} : { opacity: layout.opacity }}
+        className="card"
+        src={Cards[face]}
+        alt=""
+      />
+      <img
+        style={layout.flipped ? { opacity: layout.opacity } : {}}
+        className="card card-back"
+        src={Cards.RED_BACK}
+        alt=""
+      />
     </div>
   );
 };
