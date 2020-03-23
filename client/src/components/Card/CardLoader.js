@@ -115,9 +115,7 @@ const Cards = {
   TC: CardTC,
   TD: CardTD,
   TH: CardTH,
-  TS: CardTS,
-  width: CardAS.width,
-  height: CardAS.height
+  TS: CardTS
 };
 
 export default Cards;
