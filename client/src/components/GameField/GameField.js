@@ -5,6 +5,7 @@ import useEventListener from "../../util/EventListener";
 
 const GameField = ({ faces, users, advance }) => {
   const [state, setState] = useState({ name: "idle" });
+
   const initTransitionToDealt = () => {
     const tc = 100;
     for (let i = 0; i < 16; i++) {
