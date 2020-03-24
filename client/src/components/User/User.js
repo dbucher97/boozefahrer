@@ -2,14 +2,13 @@ import React, { useState } from "react";
 
 import "./User.css";
 import useWindowDimensions from "../../util/WindowDimensions";
-import Cards from "../Card/CardLoader";
 
 const User = ({ idx, user, gamestate, total }) => {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const [hover, setHover] = useState(false);
   const [clicked, setClicked] = useState(false);
 
-  const clickable = gamestate.name == "give" && idx != 0;
+  const clickable = gamestate.name === "give" && idx !== 0;
 
   const compileStyle = () => {
     const p = 20;
@@ -17,13 +16,13 @@ const User = ({ idx, user, gamestate, total }) => {
     let w = 450;
     let h = 150;
     let y = 2 * p + 200 + (h + p) * (idx - 1);
-    if (idx == 0) {
+    if (idx === 0) {
       w = 600;
       h = 200;
       y = p;
     }
     let x = width - p - w * scale;
-    if (gamestate.name == "idle") {
+    if (gamestate.name === "idle") {
       x = 20 + width;
     }
     const el = hover ? 20 : 0;
@@ -34,7 +33,8 @@ const User = ({ idx, user, gamestate, total }) => {
       cursor: hover ? "pointer" : "default",
       background: !clicked ? "#344f5a" : "#ffd840",
       color: !clicked ? "#fff" : "#264653",
-      opacity: gamestate.name == "idle" ? 0.0 : 1.0
+      opacity: gamestate.name === "idle" ? 0.0 : 1.0,
+      transitionDelay: `${0.05 * idx}s`
     };
   };
 
