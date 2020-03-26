@@ -8,7 +8,7 @@ import { getRowFaces } from "../../util/Pyramid";
 import { getMe } from "../../util/User";
 
 const ENDPOINT = "https://boozefahrer.herokuapp.com/";
-
+//"http://localhost:4001"; //
 const io = require("socket.io-client");
 
 /* States
@@ -43,7 +43,6 @@ const GameField = () => {
   useEffect(() => {
     socket = io(ENDPOINT);
     socket.on("update state", (state) => {
-      console.log(state);
       setState(state);
     });
     socket.on("update users", (users) => setUsers(users));
@@ -62,7 +61,11 @@ const GameField = () => {
 
   const toggleReady = () => {
     if (me && !(state.name === "dealt" && state.previousState === "idle")) {
-      me.ready = !me.ready;
+      const users_copy = [...users];
+      const idx = users_copy.findIndex((user) => user.name === login.name);
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ready: !users[idx].ready };
+      }
       emit("ready");
     }
   };

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import useWindowDimensions from "../../util/WindowDimensions";
-import Cards from "./CardLoader";
+import Cards from "./CardLoaderPng";
 
 import "./Card.css";
 import { getRow, getIdx0 } from "../../util/Pyramid";
@@ -134,12 +134,15 @@ const renderUser = (idx, state, users, me) => {
 
 const renderDealt = (idx, state, users, me) => {
   if (state.cardsPlayed[idx]) {
-    const layout = renderPyramid(state.cardsPlayed[idx].onIdx, state, users)
+    const layout = renderPyramid(state.cardsPlayed[idx].onIdx, state, users);
     return {
       ...layout,
-      customElevation: 20+state.cardsPlayed[idx].zIdx*20,
-      zIndex: state.cardsPlayed[idx].zIdx+1,
-      rPos: {x: layout.rPos.x, y: layout.rPos.y+0.05+0.05*state.cardsPlayed[idx].zIdx}
+      customElevation: 20 + state.cardsPlayed[idx].zIdx * 20,
+      zIndex: state.cardsPlayed[idx].zIdx + 1,
+      rPos: {
+        x: layout.rPos.x,
+        y: layout.rPos.y + 0.05 + 0.05 * state.cardsPlayed[idx].zIdx,
+      },
     };
   }
   if (idx < ui.PYRAMID_CARDS) {
@@ -179,25 +182,24 @@ const renderIdle = (idx, state, users) => {
 const renderGive = (idx, state, users, me) => {
   let zIdx = 0;
   if (state.playedThisRow[idx]) {
-    zIdx = state.playedThisRow[idx].zIdx+1;
+    zIdx = state.playedThisRow[idx].zIdx + 1;
     idx = state.playedThisRow[idx].onIdx;
   }
   const row = getRow(idx);
   const idx0 = getIdx0(row);
   const layout = renderDealt(idx, state, users, me);
-  console.log(zIdx);
   if (row === state.rowsPlayed + 1 && idx < 15) {
     return {
       ...layout,
       pos: { x: ui.CARD_VIEW_X, y: ui.CARD_VIEW_Y },
       flipped: false,
       scale: ui.CARD_VIEW_SCALE,
-      zIndex: 10+10*zIdx,
+      zIndex: 10 + 10 * zIdx,
       delay: (idx - idx0) * ui.TRANSITION_TIME_FLIP_UP,
       customElevation: 100,
       rPos: {
         x: layout.rPos.x,
-        y: 0.2*zIdx,
+        y: 0.2 * zIdx,
       },
     };
   } else {

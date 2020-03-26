@@ -1,0 +1,5 @@
+#! /usr/bin/env sh
+
+for f in `ls *.svg`; do
+  inkscape -z -e ${f%.*}.png -w 400 ${f%.*}.svg
+done
