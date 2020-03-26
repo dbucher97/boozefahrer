@@ -21,7 +21,7 @@ class Game {
     this.room = room;
     this.users = [];
     this.state = idleState;
-    this.settings = { lowest: 9 };
+    this.settings = { lowest: 6 };
     this.stack = randomStack(this.settings.lowest);
     //  this.stateToken = true;
   }
@@ -36,7 +36,7 @@ class Game {
       return { error: `"${this.room}" befindet sich momentan im Spiel!` };
     }
 
-    this.users.push({ id: socket.id, name, ready: false });
+    this.users.push({ id: socket.id, name, ready: false, disconnected: false });
 
     socket.join(this.room);
     this.updateUsers();
@@ -51,13 +51,33 @@ class Game {
   }
 
   disconnected(id) {
-    // TODO more complex user left handling.
     const idx = this.users.findIndex((user) => user.id === id);
     if (idx !== -1) {
       this.print(`${this.users[idx].name} left.`);
-      this.users.splice(idx, 1);
-      this.updateUsers();
+      this.users[idx]["disconnected"] = true;
+      if (
+        this.users.reduce(({ disconnected }, user) => {
+          return { disconnected: disconnected && user.disconnected };
+        }).disconnected
+      ) {
+        this.users = [];
+      }
     }
+    if (this.state.name === "idle") {
+      this.handleDisconnects();
+    }
+  }
+
+  handleDisconnects() {
+    const users_copy = [...this.users];
+    this.users.map((user, idx) => {
+      if (user.disconnected) {
+        this.print(`${user.name} removed.`);
+        users_copy.splice(idx, 1);
+      }
+    });
+    this.users = users_copy;
+    this.updateUsers();
   }
 
   advanceState() {
@@ -68,6 +88,7 @@ class Game {
           setTimeout(() => this.advanceState(), 2000);
         } else {
           // TODO send error
+          this.print("Not enough cards");
         }
         break;
       case "dealt":
@@ -98,6 +119,11 @@ class Game {
         this.state = idleState;
     }
     this.updateState();
+    if (this.state.name === "idle") {
+      this.handleDisconnects();
+      this.stack = randomStack(this.settings.lowest);
+      this.updateStack();
+    }
   }
 
   updateStateOf(id) {
@@ -130,8 +156,11 @@ class Game {
       user.ready = !user.ready;
     }
     if (
-      this.users.reduce(({ ready }, user) => {
-        return { ready: ready & user.ready };
+      this.users.reduce(({ ready, disconnected }, user) => {
+        return {
+          ready: (ready || disconnected) & (user.ready || user.disconnected),
+          disconnected: false,
+        };
       }).ready
     ) {
       this.users.map((user) => (user.ready = false));

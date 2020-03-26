@@ -16,9 +16,19 @@ const server = http.createServer(app);
 
 const io = socketIo(server);
 
-const games = [];
+let games = [];
 
 const findGame = (room) => games.find((game) => game.room === room);
+
+const cleanGames = () => {
+  const games_copy = [...games];
+  games.map((game, idx) => {
+    if (!game && game.users.lenght === 0) {
+      games_copy.splice(idx, 1);
+    }
+  });
+  games = games_copy;
+};
 
 //Socket.IO
 io.on("connection", (socket) => {
@@ -26,6 +36,8 @@ io.on("connection", (socket) => {
 
   socket.on("join", ({ room, name }, callback) => {
     room = room.trim();
+
+    cleanGames();
 
     let game = findGame(room);
     if (!game) {
@@ -38,7 +50,7 @@ io.on("connection", (socket) => {
       games.push(game);
     }
     callback(res);
-    console.log(`>> currently ${games.length} games.`);
+    console.log(`>>\tcurrently ${games.length} games.`);
   });
 
   socket.on("ready", ({ room }) => {
@@ -48,7 +60,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("play card", ({room, payload}) => {
+  socket.on("play card", ({ room, payload }) => {
     const game = findGame(room);
     if (game) {
       game.playCard(socket.id, payload);

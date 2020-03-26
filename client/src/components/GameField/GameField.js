@@ -27,9 +27,9 @@ const GameField = () => {
   const [users, setUsers] = useState([{ name: "Me", ready: false }]);
   const [stack, setStack] = useState(["AS"]);
   const [login, setLogin] = useState({
-    room: "",
-    name: "",
-    // name: Math.random().toString(36).substring(6),
+    room: "Test",
+    // name: "",
+    name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
@@ -49,15 +49,15 @@ const GameField = () => {
     socket.on("update users", (users) => setUsers(users));
     socket.on("update stack", (stack) => setStack(stack));
     socket.on("message", (msg) => console.log(msg));
-    //debug
-    // socket.emit(
-    //   "join",
-    //   {
-    //     room: login.room,
-    //     name: login.name,
-    //   },
-    //   () => null
-    // );
+    // debug;
+    socket.emit(
+      "join",
+      {
+        room: login.room,
+        name: login.name,
+      },
+      () => null
+    );
   }, []);
 
   const toggleReady = () => {
@@ -89,14 +89,30 @@ const GameField = () => {
   };
 
   const handleOnCardClick = (idx) => {
+    if (me && me.ready) {
+      return;
+    }
     const match = validatePlay(idx);
     if (match.length > 0) {
-      // if (match.length > 1) {
-      //
-      // }
+      let onIdx = match[0].idx;
+      let zIdx = 0;
+      if (match.length > 1) {
+        const detail = match.map(({ idx }) => {
+          return {
+            idx,
+            stacksize: Object.keys(state.playedThisRow).filter(
+              (key) => state.playedThisRow[key].onIdx === idx
+            ).length,
+          };
+        });
+        const min = Math.min(...detail.map(({ stacksize }) => stacksize));
+        const possibles = detail.filter(({ stacksize }) => stacksize === min);
+        onIdx = possibles[Math.floor(Math.random() * possibles.length)].idx;
+        zIdx = min + 1;
+      }
       const playedThisRow = { ...state.playedThisRow };
-      playedThisRow[idx] = { onIdx: match[0].idx, by: login.name, zIdx: 0 };
-      emit("play card", { onIdx: match[0].idx, idx });
+      playedThisRow[idx] = { onIdx: onIdx, by: login.name, zIdx };
+      emit("play card", { onIdx: onIdx, idx });
       setState({
         ...state,
         playedThisRow: playedThisRow,
