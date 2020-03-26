@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import useWindowDimensions from "../../util/WindowDimensions";
-import Cards from "./CardLoaderPng";
+import Cards from "./CardLoader";
 
 import "./Card.css";
 import { getRow, getIdx0 } from "../../util/Pyramid";
