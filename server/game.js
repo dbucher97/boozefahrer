@@ -104,7 +104,6 @@ class Game {
 
         break;
       case "give":
-        console;
         this.state = {
           ...dealtState,
           previousState: "give",
@@ -178,7 +177,6 @@ class Game {
       const sameOnIdx = Object.keys(this.state.playedThisRow).filter(
         (key) => this.state.playedThisRow[key].onIdx === onIdx
       );
-      console.log(sameOnIdx);
       if (sameOnIdx) {
         cardPlayed[idx].zIdx = sameOnIdx.length;
       }

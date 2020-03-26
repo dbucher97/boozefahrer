@@ -1,16 +1,20 @@
 const express = require("express");
 const http = require("http");
+const path = require("path");
 //const cors = require("cors");
 const socketIo = require("socket.io");
 
-const Game = require("./game");
+const Game = require("./server/game");
 
 const port = process.env.PORT || 4001;
-const index = require("./routes/index");
 
 const app = express();
-// app.use(cors());
-app.use(index);
+
+// Serve React app
+app.use(express.static(path.join(__dirname, "./../client/build")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "./../client/build/index.html"));
+});
 
 const server = http.createServer(app);
 
