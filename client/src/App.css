@@ -8,6 +8,6 @@
   background-color: #264653;
   perspective: 2000px;
   overflow: hidden;
-
+  user-select: none;
   font-family: Montserrat;
 }
