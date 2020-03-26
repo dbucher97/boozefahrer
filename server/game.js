@@ -101,6 +101,7 @@ class Game {
             cardsPlayed: this.state.cardsPlayed,
           };
         }
+        setTimeout(() => this.advanceState(), 20000);
 
         break;
       case "give":
