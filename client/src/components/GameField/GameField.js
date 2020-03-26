@@ -7,7 +7,7 @@ import useEventListener from "../../util/EventListener";
 import { getRowFaces } from "../../util/Pyramid";
 import { getMe } from "../../util/User";
 
-const ENDPOINT = "http://10.21.254.18:4001";
+const ENDPOINT = "https://boozefahrer.herokuapp.com/";
 
 const io = require("socket.io-client");
 
