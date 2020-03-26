@@ -7,8 +7,8 @@ import useEventListener from "../../util/EventListener";
 import { getRowFaces } from "../../util/Pyramid";
 import { getMe } from "../../util/User";
 
-const ENDPOINT = "https://boozefahrer.herokuapp.com/";
-// const ENDPOINT = "http://localhost:4001"; //
+// const ENDPOINT = "https://boozefahrer.herokuapp.com/";
+const ENDPOINT = "http://localhost:4001"; //
 const io = require("socket.io-client");
 
 /* States
@@ -64,8 +64,9 @@ const GameField = () => {
       const users_copy = [...users];
       const idx = users_copy.findIndex((user) => user.name === login.name);
       if (idx !== -1) {
-        users[idx] = { ...users[idx], ready: !users[idx].ready };
+        users_copy[idx] = { ...users[idx], ready: !users[idx].ready };
       }
+      setUsers(users_copy);
       emit("ready");
     }
   };
