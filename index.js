@@ -1,4 +1,5 @@
 const express = require("express");
+const favicon = require("serve-favicon");
 const http = require("http");
 const path = require("path");
 //const cors = require("cors");
@@ -11,9 +12,10 @@ const port = process.env.PORT || 4001;
 const app = express();
 
 // Serve React app
-app.use(express.static(path.join(__dirname, "./../client/build")));
+app.use(favicon(path.join(__dirname, "./client/public", "favicon.ico")));
+app.use(express.static(path.join(__dirname, "./client/build")));
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "./../client/build/index.html"));
+  res.sendFile(path.join(__dirname + "./client/build/index.html"));
 });
 
 const server = http.createServer(app);

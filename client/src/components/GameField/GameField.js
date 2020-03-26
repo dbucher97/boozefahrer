@@ -27,9 +27,9 @@ const GameField = () => {
   const [users, setUsers] = useState([{ name: "Me", ready: false }]);
   const [stack, setStack] = useState(["AS"]);
   const [login, setLogin] = useState({
-    room: "Test",
-    // name: "",
-    name: Math.random().toString(36).substring(6),
+    room: "",
+    name: "",
+    //name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
@@ -50,14 +50,14 @@ const GameField = () => {
     socket.on("update stack", (stack) => setStack(stack));
     socket.on("message", (msg) => console.log(msg));
     // debug;
-    socket.emit(
-      "join",
-      {
-        room: login.room,
-        name: login.name,
-      },
-      () => null
-    );
+    // socket.emit(
+    //   "join",
+    //   {
+    //     room: login.room,
+    //     name: login.name,
+    //   },
+    //   () => null
+    // );
   }, []);
 
   const toggleReady = () => {
