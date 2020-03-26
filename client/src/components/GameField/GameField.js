@@ -7,8 +7,8 @@ import useEventListener from "../../util/EventListener";
 import { getRowFaces } from "../../util/Pyramid";
 import { getMe } from "../../util/User";
 
-// const ENDPOINT = "https://boozefahrer.herokuapp.com/";
-const ENDPOINT = "http://localhost:4001"; //
+const ENDPOINT = "https://boozefahrer.herokuapp.com/";
+// const ENDPOINT = "http://localhost:4001"; //
 const io = require("socket.io-client");
 
 /* States
