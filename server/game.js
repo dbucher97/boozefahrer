@@ -21,7 +21,7 @@ class Game {
     this.room = room;
     this.users = [];
     this.state = idleState;
-    this.settings = { lowest: 6 };
+    this.settings = { lowest: 4 };
     this.stack = randomStack(this.settings.lowest);
     //  this.stateToken = true;
   }
