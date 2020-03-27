@@ -7,7 +7,9 @@ import useEventListener from "../../util/EventListener";
 import { getRowFaces } from "../../util/Pyramid";
 import { getMe } from "../../util/User";
 
-const ENDPOINT = process.env.ENDPOINT || "http://localhost:4001";
+const ENDPOINT = window.location.href.includes("localhost")
+  ? "http://localhost:4001/"
+  : window.location.href;
 const io = require("socket.io-client");
 
 /* States
