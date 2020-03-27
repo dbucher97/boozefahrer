@@ -85,7 +85,11 @@ class Game {
       case "idle":
         if (15 + this.users.length * 3 < this.stack.length) {
           this.state = dealtState;
-          setTimeout(() => this.advanceState(), 2000);
+          setTimeout(() => {
+            this.users.map((user) => (user.ready = false));
+            this.updateUsers();
+            this.advanceState();
+          }, 2000);
         } else {
           // TODO send error
           this.print("Not enough cards");
