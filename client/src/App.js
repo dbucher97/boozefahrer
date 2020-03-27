@@ -1,12 +1,12 @@
-import React from "react";
+import React from 'react';
 
-import "./App.css";
-import GameField from "./components/GameField/GameField";
+import './App.css';
+import Game from './components/Game/Game';
 
 const App = () => {
   return (
     <div className="container" tabIndex={0}>
-      <GameField />
+      <Game />
     </div>
   );
 };

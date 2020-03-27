@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
-import Card from "../Card/Card";
-import UserInterface from "../UserInterface/UserInterface";
-import LoginPage from "../LoginPage/LoginPage";
-import useEventListener from "../../util/EventListener";
-import { getRowFaces } from "../../util/Pyramid";
-import { getMe } from "../../util/User";
+import Card from '../Card/Card';
+import UserInterface from '../UserInterface/UserInterface';
+import LoginPage from '../LoginPage/LoginPage';
+import useEventListener from '../../util/EventListener';
+import { getRowFaces } from '../../util/Pyramid';
+import { getMe } from '../../util/User';
 
-const ENDPOINT = window.location.href.includes("localhost")
-  ? "http://localhost:4001/"
+import { Render } from '../../Render';
+import useWindowDimensions from '../../util/WindowDimensions';
+
+const ENDPOINT = window.location.href.includes('localhost')
+  ? 'http://localhost:4001/'
   : window.location.href;
-const io = require("socket.io-client");
+const io = require('socket.io-client');
 
 /* States
  *
@@ -19,21 +22,22 @@ const io = require("socket.io-client");
  * GIVE: needs [rowsPlayed]
  */
 
-const loginState = { name: "login", previousState: "" };
+const loginState = { name: 'login', previousState: '' };
 
 let socket;
 
 const GameField = () => {
   const [state, setState] = useState(loginState);
-  const [users, setUsers] = useState([{ name: "Me", ready: false }]);
-  const [stack, setStack] = useState(["AS"]);
+  const [users, setUsers] = useState([{ name: 'Me', ready: false }]);
+  const [stack, setStack] = useState(['AS']);
   const [login, setLogin] = useState({
-    room: "",
-    name: "",
+    room: '',
+    name: '',
     //name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
+  const [settings, setSettings] = useState({ shape: 'Pyramid' });
 
   const me = getMe(users, login.name);
 
@@ -43,12 +47,12 @@ const GameField = () => {
 
   useEffect(() => {
     socket = io(ENDPOINT);
-    socket.on("update state", (state) => {
+    socket.on('update state', (state) => {
       setState(state);
     });
-    socket.on("update users", (users) => setUsers(users));
-    socket.on("update stack", (stack) => setStack(stack));
-    socket.on("message", (msg) => console.log(msg));
+    socket.on('update users', (users) => setUsers(users));
+    socket.on('update stack', (stack) => setStack(stack));
+    socket.on('message', (msg) => console.log(msg));
     // debug;
     // socket.emit(
     //   "join",
@@ -61,16 +65,20 @@ const GameField = () => {
   }, []);
 
   const toggleReady = () => {
-    if (me && !(state.name === "dealt" && state.previousState === "idle")) {
+    if (me && !(state.name === 'dealt' && state.previousState === 'idle')) {
       const users_copy = [...users];
       const idx = users_copy.findIndex((user) => user.name === login.name);
       if (idx !== -1) {
         users_copy[idx] = { ...users[idx], ready: !users[idx].ready };
       }
       setUsers(users_copy);
-      emit("ready");
+      emit('ready');
     }
   };
+
+  const window = useWindowDimensions();
+  const render = new Render(window, settings);
+  console.log(render.shapeCard(2));
 
   // useEffect(() => {
   //   if (state.name === "idle") {
@@ -80,12 +88,12 @@ const GameField = () => {
   //
 
   const handleOnKeyPress = (e) => {
-    if (e.key === " ") {
+    if (e.key === ' ') {
       e.preventDefault();
       toggleReady();
     }
   };
-  useEventListener("keypress", handleOnKeyPress);
+  useEventListener('keypress', handleOnKeyPress);
 
   const validatePlay = (idx) => {
     const rowFaces = getRowFaces(state.rowsPlayed + 1, stack);
@@ -106,7 +114,7 @@ const GameField = () => {
           return {
             idx,
             stacksize: Object.keys(state.playedThisRow).filter(
-              (key) => state.playedThisRow[key].onIdx === idx
+              (key) => state.playedThisRow[key].onIdx === idx,
             ).length,
           };
         });
@@ -117,7 +125,7 @@ const GameField = () => {
       }
       const playedThisRow = { ...state.playedThisRow };
       playedThisRow[idx] = { onIdx: onIdx, by: login.name, zIdx };
-      emit("play card", { onIdx: onIdx, idx });
+      emit('play card', { onIdx: onIdx, idx });
       setState({
         ...state,
         playedThisRow: playedThisRow,
@@ -127,27 +135,18 @@ const GameField = () => {
 
   const handleOnLoginSubmit = () => {
     if (!login.name || !login.room) {
-      const s =
-        !login.name && !login.room
-          ? "Raum und Name"
-          : !login.name
-          ? "Name"
-          : "Raum";
+      const s = !login.name && !login.room ? 'Raum und Name' : !login.name ? 'Name' : 'Raum';
       setLogin({ ...login, error: `Bitte ${s} ausfüllen!` });
     } else {
-      socket.emit(
-        "join",
-        { name: login.name, room: login.room },
-        ({ error }) => {
-          setLogin({ ...login, error, waitingForCallback: false });
-        }
-      );
+      socket.emit('join', { name: login.name, room: login.room }, ({ error }) => {
+        setLogin({ ...login, error, waitingForCallback: false });
+      });
       setLogin({ ...login, waitingForCallback: true });
       setTimeout(() => {
         setLogin({
           ...login,
           waitingForCallback: false,
-          error: "Server antwortet nicht!",
+          error: 'Server antwortet nicht!',
         });
       }, 5000);
     }
@@ -155,18 +154,8 @@ const GameField = () => {
 
   return (
     <div>
-      <LoginPage
-        gamestate={state}
-        onSubmit={handleOnLoginSubmit}
-        login={login}
-        setLogin={setLogin}
-      />
-      <UserInterface
-        users={users}
-        state={state}
-        me={me}
-        toggleReady={toggleReady}
-      />
+      <LoginPage gamestate={state} onSubmit={handleOnLoginSubmit} login={login} setLogin={setLogin} />
+      <UserInterface users={users} state={state} me={me} toggleReady={toggleReady} />
       {stack.map((item, idx) => {
         return (
           <Card

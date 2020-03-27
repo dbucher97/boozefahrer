@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
-import useWindowDimensions from "../../util/WindowDimensions";
-import Cards from "./CardLoader";
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import useWindowDimensions from '../../util/WindowDimensions';
+import Cards from './CardLoader';
 
-import "./Card.css";
-import { getRow, getIdx0 } from "../../util/Pyramid";
-import * as ui from "../ui";
+import './Card.css';
+import { getRow, getIdx0 } from '../../util/Pyramid';
+import * as ui from '../ui';
 
 const defaultLayoutProps = {
   flipped: true,
@@ -31,10 +31,7 @@ const layoutProps = (state) => {
   };
 };
 
-const renderStack = (
-  idx,
-  { pos, rPos, absPos, cardsInStack = ui.FULL_STACK }
-) => {
+const renderStack = (idx, { pos, rPos, absPos, cardsInStack = ui.FULL_STACK }) => {
   return layoutProps({
     customElevation: Math.floor((cardsInStack - idx) / 5) * 10,
     zIndex: cardsInStack - idx, //TODO numCards
@@ -50,16 +47,14 @@ const renderPyramid = (idx, state, users) => {
   const idx0 = getIdx0(row);
   const pos = {
     x: ui.PYRAMID_X_ANCHOR,
-    y:
-      ui.PYRAMID_Y_ANCHOR -
-      ((ui.ROWS - 1) / 2.0) * ui.CARD_REL_HEIGHT * ui.CARD_PYRAMID_Y_PAD,
+    y: ui.PYRAMID_Y_ANCHOR - ((ui.ROWS - 1) / 2.0) * ui.CARD_REL_HEIGHT * ui.CARD_PYRAMID_Y_PAD,
   };
   const rPos = {
     x: ui.CARD_PYRAMID_X_PAD * (idx - idx0 - (row - 1) / 2),
     y: ui.CARD_PYRAMID_Y_PAD * (row - 1),
   };
   let transition;
-  if (state.previousState === "idle") {
+  if (state.previousState === 'idle') {
     transition = (i) => i * ui.TRANSITION_TIME_DRAW;
   } else {
     transition = (i) => (row - 1 + idx0 - i) * ui.TRANSITION_TIME_FLIP;
@@ -80,7 +75,7 @@ const renderUser = (idx, state, users, me) => {
   const ridx = Math.floor(i / users.length);
   const layout = layoutProps({
     zIndex: 1,
-    delay: state.previousState === "idle" ? 0.05 * idx : 0,
+    delay: state.previousState === 'idle' ? 0.05 * idx : 0,
   });
   if (uidx === midx) {
     // Render me
@@ -89,7 +84,7 @@ const renderUser = (idx, state, users, me) => {
       flipped: false,
       absPos: { x: 30, y: 30 },
       rPos: { x: 0.5 + ridx * ui.CARD_PYRAMID_X_PAD, y: 0.5 },
-      clickable: state.name === "give",
+      clickable: state.name === 'give',
       scale: ui.USER_ME_CARD_SCALE,
     };
   } else {
@@ -172,8 +167,7 @@ const renderIdle = (idx, state, users) => {
   return {
     ...renderStack(idx, { pos: { x: ui.STACK_X, y: ui.STACK_Y } }),
     delay: state.previousState
-      ? (3 * users.length + ui.PYRAMID_CARDS - 1 - idx) *
-          ui.TRANSITION_TIME_STACK +
+      ? (3 * users.length + ui.PYRAMID_CARDS - 1 - idx) * ui.TRANSITION_TIME_STACK +
         ui.TRANSITION_RANDOMNESS * Math.random()
       : 0,
   };
@@ -216,13 +210,13 @@ const renderGive = (idx, state, users, me) => {
 
 const renderLayout = (idx, state, users, me) => {
   switch (state.name) {
-    case "login":
+    case 'login':
       return renderLogin(idx, state, users);
-    case "idle":
+    case 'idle':
       return renderIdle(idx, state, users);
-    case "dealt":
+    case 'dealt':
       return renderDealt(idx, state, users, me);
-    case "give":
+    case 'give':
       return renderGive(idx, state, users, me);
     default:
       return layoutProps();
@@ -245,16 +239,8 @@ const Card = ({ idx, face, gamestate, users, onClick, me }) => {
       w = h / ui.CARD_ASPECT;
     }
     const scale = layout.scale;
-    let x =
-      layout.pos.x * width +
-      layout.absPos.x +
-      w * scale * layout.rPos.x -
-      w / 2;
-    let y =
-      layout.pos.y * height +
-      layout.absPos.y +
-      h * scale * layout.rPos.y -
-      h / 2;
+    let x = layout.pos.x * width + layout.absPos.x + w * scale * layout.rPos.x - w / 2;
+    let y = layout.pos.y * height + layout.absPos.y + h * scale * layout.rPos.y - h / 2;
     let elevation1 = layout.clickable ? elevation : 0;
     let elev = elevation1 + layout.customElevation;
 
@@ -264,8 +250,8 @@ const Card = ({ idx, face, gamestate, users, onClick, me }) => {
       transform: `translateX(${x}px) translateY(${y}px) scale(${scale}) translateZ(${elev}px) rotateY(${rotate}deg) scale(${
         1 + elevation1 * ui.ELEVATION_SCALE_COEFF
       })`,
-      cursor: layout.clickable ? "pointer" : "default",
-      display: layout.display ? "block" : "none",
+      cursor: layout.clickable ? 'pointer' : 'default',
+      display: layout.display ? 'block' : 'none',
       zIndex: layout.zIndex + elevation,
       transitionDelay: `${layout.delay}s`,
     };
