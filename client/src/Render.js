@@ -123,7 +123,7 @@ const Render = class {
       this.compensate(ui.CARD_VIEW_SCALE),
       this.fractional({ x: 0.5, y: 0.5 }),
       centered(
-        this.relative({ x: ridx * ui.CARD_VIEW_SCALE * ui.CARD_SHAPE_X_PAD, y: 0 }),
+        this.relative({ x: ridx * ui.CARD_VIEW_SCALE * ui.CARD_SHAPE_X_PAD, y: 0.2 * zIndex }),
         this.relative({
           x: ((rowLength - 1) * ui.CARD_SHAPE_X_PAD + 1) * ui.CARD_VIEW_SCALE,
           y: ui.CARD_VIEW_SCALE,
@@ -132,46 +132,46 @@ const Render = class {
     );
   }
 
-  userMe(outside) {
+  userMe(noShow) {
     return addPos(
       {
-        x: !outside ? ui.UI_PAD : 0,
+        x: !noShow ? ui.UI_PAD : -ui.UI_PAD,
         y: ui.UI_PAD,
       },
       this.relative({
-        x: -(outside ? this.playerCards * ui.USER_ME_CARD_SCALE * ui.CARD_SHAPE_X_PAD : 0),
+        x: -(noShow ? this.playerCards * ui.USER_ME_CARD_SCALE * ui.CARD_SHAPE_X_PAD : 0),
         y: 0,
       }),
     );
   }
 
-  userMeCard(idx, outside) {
+  userMeCard(idx, noShow) {
     return addPos(
       this.compensate(ui.USER_ME_CARD_SCALE),
       this.relative({ x: ui.USER_ME_CARD_SCALE * ui.CARD_SHAPE_X_PAD * idx, y: 0 }),
-      this.userMe(outside),
+      this.userMe(noShow),
     );
   }
 
-  user(uidx, outside) {
+  user(uidx, noShow) {
     return addPos(
       this.fractional({ x: 1, y: 0 }),
       {
-        x: !outside ? -ui.UI_PAD - ui.USER_CARD_WIDTH - ui.UI_PAD * 0.5 : 0,
+        x: !noShow ? -ui.UI_PAD - ui.USER_CARD_WIDTH - ui.UI_PAD * 0.5 : ui.UI_PAD,
         y: ui.UI_PAD + ui.UI_PAD * uidx,
       },
       this.relative({
-        x: outside ? this.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD : 0,
+        x: noShow ? this.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD : 0,
         y: uidx * ui.USER_CARD_SCALE,
       }),
     );
   }
 
-  userCard(uidx, idx, outside) {
+  userCard(uidx, idx, noShow) {
     return addPos(
       this.compensate(ui.USER_CARD_SCALE),
       this.relative({ x: -idx * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD, y: 0 }),
-      this.user(uidx, outside),
+      this.user(uidx, noShow),
     );
   }
 };

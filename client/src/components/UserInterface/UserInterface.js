@@ -4,10 +4,16 @@ import PropTypes from 'prop-types';
 import User from '../User/User';
 import * as ui from '../../UIConstants';
 
-let render;
+const UserInterface = ({ state, render, settings, users, me, toggleReady }) => {
+  const midx = Math.max(
+    users.findIndex((user) => user === me),
+    0,
+  );
 
-const UserInterface = ({ state, renderObject, users, me, toggleReady }) => {
-  render = renderObject;
+  const usersCopy = [...users];
+  usersCopy.splice(midx, 1);
+  users = [users[midx], ...usersCopy];
+
   const mockUsers = [
     ...users,
     ...[...Array(ui.MAX_PLAYERS - users.length).keys()].map(() => {
@@ -20,11 +26,12 @@ const UserInterface = ({ state, renderObject, users, me, toggleReady }) => {
       {mockUsers.map((user, idx) => (
         <User
           state={state}
-          users={mockUsers}
-          renderObject={render}
-          me={me}
+          user={user}
+          isMe={user === me}
+          settings={settings}
+          render={render}
           key={idx}
-          idx={idx}
+          uidx={idx - 1}
           toggleReady={toggleReady}
         />
       ))}
@@ -35,6 +42,8 @@ const UserInterface = ({ state, renderObject, users, me, toggleReady }) => {
 UserInterface.propTypes = {
   state: PropTypes.object,
   users: PropTypes.array,
+  render: PropTypes.object,
+  settings: PropTypes.object,
   me: PropTypes.object,
   toggleReady: PropTypes.func,
 };

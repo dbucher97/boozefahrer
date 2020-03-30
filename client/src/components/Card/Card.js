@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import useWindowDimensions from './../../util/WindowDimensions';
 import Cards from './CardLoader';
 
 import './Card.css';
@@ -22,7 +21,7 @@ const renderStack = (pos, idx, startIdx, cardsInStack) => {
   const stackIdx = cardsInStack - (idx - startIdx + 1);
   return {
     elevation: Math.floor(stackIdx / 5) * 10,
-    zIndex: stackIdx, //TODO numCards
+    zIndex: stackIdx,
     pos: render.stackCard(pos),
   };
 };
@@ -50,7 +49,9 @@ const renderUser = () => {
   const uidx = i % users.length;
   const ridx = Math.floor(i / users.length);
   const delay = state.previousState === 'idle' ? 0.05 * idx : 0;
-  if (uidx === midx) {
+  if (users[uidx].disconnected) {
+    return renderStack({ x: ui.STACK_X, y: ui.STACK_Y }, 0, 0, 1);
+  } else if (uidx === midx) {
     // Render me
     return {
       scale: ui.USER_ME_CARD_SCALE,
@@ -72,13 +73,14 @@ const renderUser = () => {
 
 const renderDealt = () => {
   if (state.cardsPlayed[idx]) {
-    const style = renderShape(state.cardsPlayed[idx].onIdx);
     const zIndex = state.cardsPlayed[idx].zIndex + 1;
+    idx = state.cardsPlayed[idx].onIdx;
+    const style = renderShape();
     return {
       ...style,
       elevation: 20 * zIndex,
       zIndex: zIndex,
-      pos: addPos(style.pos, render.relative({ x: 0, y: 0.1 * zIndex })),
+      pos: addPos(style.pos, render.relative({ x: 0, y: 0.05 * zIndex })),
     };
   }
   if (idx < cardsToUsers) {
@@ -126,14 +128,8 @@ const renderGive = () => {
       customElevation: 100,
     };
   } else {
-    let opacity = ui.BACKGROUND_OPACITY;
-    if (
-      state.cardsPlayed[idx] == null &&
-      idx >= ui.PYRAMID_CARDS &&
-      idx < ui.PYRAMID_CARDS + 3 * users.length
-    )
-      opacity = 1;
     const style = renderDealt();
+    let opacity = idx < cardsToUsers ? ui.BACKGROUND_OPACITY : 1;
     return { ...style, opacity: opacity };
   }
 };
@@ -188,6 +184,7 @@ const Card = (props) => {
           : null
       }
     >
+      <div className="card-inner-background" style={{ borderRadius: `${render.cardWidth / 20}px` }} />
       <img
         style={style.flipped ? {} : { opacity: style.opacity }}
         className="card"

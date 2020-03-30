@@ -14,7 +14,9 @@ import Pyramid from '../../shapes/Pyramid';
 
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
-  : window.location.href;
+  : window.location.href.includes('10.21.254.18')
+  ? 'http://10.21.254.18:4001'
+  : 'window.location.href';
 const io = require('socket.io-client');
 
 /* States
@@ -93,15 +95,12 @@ const orderedStack = [
 let socket;
 let render;
 
-const GameField = () => {
+let me = { name: 'me', disconnected: true };
+
+const Game = () => {
   const window = useWindowDimensions();
   const [state, setState] = useState(loginState);
-  const [users, setUsers] = useState([
-    { name: 'Me', ready: false, disconnected: false },
-    { name: 'User1', ready: false, disconnected: false },
-    { name: 'User2', ready: false, disconnected: false },
-    { name: 'User3', ready: false, disconnected: false },
-  ]);
+  const [users, setUsers] = useState([me]);
   const [stack, setStack] = useState(orderedStack);
   const [login, setLogin] = useState({
     room: 'Test',
@@ -116,7 +115,9 @@ const GameField = () => {
     lowest: 2,
   });
 
-  const me = getMe(users, login.name);
+  if (state.name !== 'login') {
+    me = getMe(users, login.name);
+  }
   render = new Render(window, settings, users, me);
 
   const emit = (msg, payload) => {
@@ -229,7 +230,14 @@ const GameField = () => {
   return (
     <div>
       <LoginPage gamestate={state} onSubmit={handleOnLoginSubmit} login={login} setLogin={setLogin} />
-      <UserInterface users={users} renderObject={render} state={state} me={me} toggleReady={toggleReady} />
+      <UserInterface
+        users={users}
+        render={render}
+        state={state}
+        me={me}
+        settings={settings}
+        toggleReady={toggleReady}
+      />
       {stack.map((item, idx) => {
         return (
           <Card
@@ -249,4 +257,4 @@ const GameField = () => {
   );
 };
 
-export default GameField;
+export default Game;
