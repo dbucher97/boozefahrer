@@ -4,11 +4,13 @@ import Card from '../Card/Card';
 import UserInterface from '../UserInterface/UserInterface';
 import LoginPage from '../LoginPage/LoginPage';
 import useEventListener from '../../util/EventListener';
-import { getRowFaces } from '../../util/Pyramid';
+import { getRowFaces } from '../../shapes/Pyramid';
 import { getMe } from '../../util/User';
 
 import { Render } from '../../Render';
 import useWindowDimensions from '../../util/WindowDimensions';
+
+import Pyramid from '../../shapes/Pyramid';
 
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
@@ -23,23 +25,99 @@ const io = require('socket.io-client');
  */
 
 const loginState = { name: 'login', previousState: '' };
+const dealtState = {
+  name: 'dealt',
+  previousState: 'idle',
+  rowsPlayed: 0,
+  cardsPlayed: {},
+};
+const idleState = {
+  name: 'idle',
+  previousState: 'login',
+};
+const orderedStack = [
+  'AS',
+  'AC',
+  'AD',
+  'AH',
+  'KS',
+  'KC',
+  'KD',
+  'KH',
+  'QS',
+  'QC',
+  'QD',
+  'QH',
+  'JS',
+  'JC',
+  'JD',
+  'JH',
+  'TS',
+  'TC',
+  'TD',
+  'TH',
+  '9S',
+  '9C',
+  '9D',
+  '9H',
+  '8S',
+  '8C',
+  '8D',
+  '8H',
+  '7S',
+  '7C',
+  '7D',
+  '7H',
+  '6S',
+  '6C',
+  '6D',
+  '6H',
+  '5S',
+  '5C',
+  '5D',
+  '5H',
+  '4S',
+  '4C',
+  '4D',
+  '4H',
+  '3S',
+  '3C',
+  '3D',
+  '3H',
+  '2S',
+  '2C',
+  '2D',
+  '2H',
+];
 
 let socket;
+let render;
 
 const GameField = () => {
+  const window = useWindowDimensions();
   const [state, setState] = useState(loginState);
-  const [users, setUsers] = useState([{ name: 'Me', ready: false }]);
-  const [stack, setStack] = useState(['AS']);
+  const [users, setUsers] = useState([
+    { name: 'Me', ready: false, disconnected: false },
+    { name: 'User1', ready: false, disconnected: false },
+    { name: 'User2', ready: false, disconnected: false },
+    { name: 'User3', ready: false, disconnected: false },
+  ]);
+  const [stack, setStack] = useState(orderedStack);
   const [login, setLogin] = useState({
-    room: '',
-    name: '',
-    //name: Math.random().toString(36).substring(6),
+    room: 'Test',
+    // name: 'Me',
+    name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
-  const [settings, setSettings] = useState({ shape: 'Pyramid' });
+  const [settings, setSettings] = useState({
+    shape: { name: 'Pyramid', rows: 5, total: Pyramid.getTotal(5) },
+    playerCards: 3,
+    lowest: 2,
+  });
 
   const me = getMe(users, login.name);
+  render = new Render(window, settings, users, me);
 
   const emit = (msg, payload) => {
     socket.emit(msg, { room: login.room, payload });
@@ -76,10 +154,6 @@ const GameField = () => {
     }
   };
 
-  const window = useWindowDimensions();
-  const render = new Render(window, settings);
-  console.log(render.shapeCard(2));
-
   // useEffect(() => {
   //   if (state.name === "idle") {
   //     setTimeout(toggleReady, 4000);
@@ -108,7 +182,7 @@ const GameField = () => {
     const match = validatePlay(idx);
     if (match.length > 0) {
       let onIdx = match[0].idx;
-      let zIdx = 0;
+      let zIndex = 0;
       if (match.length > 1) {
         const detail = match.map(({ idx }) => {
           return {
@@ -121,10 +195,10 @@ const GameField = () => {
         const min = Math.min(...detail.map(({ stacksize }) => stacksize));
         const possibles = detail.filter(({ stacksize }) => stacksize === min);
         onIdx = possibles[Math.floor(Math.random() * possibles.length)].idx;
-        zIdx = min + 1;
+        zIndex = min + 1;
       }
       const playedThisRow = { ...state.playedThisRow };
-      playedThisRow[idx] = { onIdx: onIdx, by: login.name, zIdx };
+      playedThisRow[idx] = { onIdx: onIdx, by: login.name, zIndex };
       emit('play card', { onIdx: onIdx, idx });
       setState({
         ...state,
@@ -155,17 +229,19 @@ const GameField = () => {
   return (
     <div>
       <LoginPage gamestate={state} onSubmit={handleOnLoginSubmit} login={login} setLogin={setLogin} />
-      <UserInterface users={users} state={state} me={me} toggleReady={toggleReady} />
+      <UserInterface users={users} renderObject={render} state={state} me={me} toggleReady={toggleReady} />
       {stack.map((item, idx) => {
         return (
           <Card
             face={item}
-            key={idx}
             idx={idx}
-            gamestate={state}
-            users={users}
+            key={idx}
             me={me}
             onClick={() => handleOnCardClick(idx)}
+            render={render}
+            settings={settings}
+            state={state}
+            users={users}
           />
         );
       })}

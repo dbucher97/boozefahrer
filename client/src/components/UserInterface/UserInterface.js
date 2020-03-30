@@ -1,14 +1,17 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import User from "../User/User";
-import * as ui from "../ui";
+import User from '../User/User';
+import * as ui from '../../UIConstants';
 
-const UserInterface = ({ state, users, me, toggleReady }) => {
+let render;
+
+const UserInterface = ({ state, renderObject, users, me, toggleReady }) => {
+  render = renderObject;
   const mockUsers = [
     ...users,
     ...[...Array(ui.MAX_PLAYERS - users.length).keys()].map(() => {
-      return {};
+      return { disconnected: true };
     }),
   ];
 
@@ -18,6 +21,7 @@ const UserInterface = ({ state, users, me, toggleReady }) => {
         <User
           state={state}
           users={mockUsers}
+          renderObject={render}
           me={me}
           key={idx}
           idx={idx}

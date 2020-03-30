@@ -1,42 +1,40 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
-import * as ui from "../ui";
-import { renderUser } from "../Card/Card";
-import useWindowDimensions from "../../util/WindowDimensions";
+import * as ui from '../../UIConstants';
+import { userCard, userMeCard } from '../Card/Card';
+import useWindowDimensions from '../../util/WindowDimensions';
 
-import "./User.css";
+import { compileDefaultStyle } from '../../Render';
 
-const Placeholder = ({ state, users, me, cidx, idx }) => {
-  const { width, height } = useWindowDimensions();
+import './User.css';
 
-  const compileStyle = () => {
-    const layout = renderUser(cidx, { name: "", previousState: "" }, users, me);
-    const scale = layout.scale;
-    let h = ui.CARD_REL_HEIGHT * height;
-    let w = h / ui.CARD_ASPECT;
-    h = h * scale;
-    w = w * scale;
-    let x =
-      layout.pos.x * width + layout.absPos.x + w * layout.rPos.x - w / 2 - 3;
-    let y =
-      layout.pos.y * height + layout.absPos.y + h * layout.rPos.y - h / 2 - 3;
-    let opacity = 1;
-    if (!users[idx].name || state.name === "login") {
-      x += ui.USER_CARD_WIDTH * 3;
-      opacity = 0;
-    }
-    return {
-      width: w - 4,
-      height: h - 4,
-      transform: `translateX(${x}px) translateY(${y}px)`,
-      opacity: opacity,
-    };
-  };
+const Placeholder = ({ state, users, renderObject, me, cidx, idx }) => {
+  const render = renderObject;
+  const noShow = state.name === 'login' || users[idx].disconnected;
+  const opacity = noShow ? 0 : 1;
+  let scale;
+  let pos;
+
+  if (users[idx] === me) {
+    pos = render.userMeCard(cidx, noShow);
+    scale = ui.USER_ME_CARD_SCALE;
+  } else {
+    pos = render.userCard(idx, cidx, state, noShow);
+    scale = ui.USER_CARD_SCALE;
+  }
+  const style = compileDefaultStyle({
+    pos,
+    opacity,
+    width: render.cardWidth,
+    height: render.cardHeight,
+    scale: scale,
+  });
+
   return (
-    <div className="placeholder" style={compileStyle()}>
+    <div className="placeholder" style={style}>
       <div className="placeholder-inner" />
     </div>
   );
@@ -50,26 +48,22 @@ Placeholder.propTypes = {
   state: PropTypes.object,
 };
 
-const User = ({ state, idx, users, me, toggleReady }) => {
+const User = ({ state, idx, users, me, toggleReady, renderObject }) => {
+  const render = renderObject;
   const cidx = (i) => ui.PYRAMID_CARDS + i * users.length + idx;
   const { width, height } = useWindowDimensions();
-  const layout = renderUser(
-    cidx(0),
-    { name: "", previousState: "" },
-    users,
-    me
-  );
+  const layout = { absPos: { x: 100, y: 100 }, scale: 1, rPos: { x: 0, y: 0 }, pos: { x: 0, y: 0 } };
+  //renderUser(cidx(0), { name: '', previousState: '' }, users, me);
   const scale = layout.scale;
   let h = ui.CARD_REL_HEIGHT * height;
   h = h * scale;
   const w = ui.USER_CARD_WIDTH;
   let x = width - ui.USER_CARD_WIDTH - ui.UI_PAD;
-  let y =
-    layout.pos.y * height + layout.absPos.y + h * layout.rPos.y - h / 2 - 4;
+  let y = layout.pos.y * height + layout.absPos.y + h * layout.rPos.y - h / 2 - 4;
 
   const compileStyle = () => {
     let opacity = 1;
-    if (!users[idx].name || state.name === "login") {
+    if (!users[idx].name || state.name === 'login') {
       x += 3 * ui.USER_CARD_WIDTH;
       opacity = 0;
     }
@@ -97,46 +91,45 @@ const User = ({ state, idx, users, me, toggleReady }) => {
       x = ui.UI_PAD;
       opacity = 1 - opacity;
       size = 24;
-      additional["width"] = 3 * cw * ui.CARD_PYRAMID_Y_PAD;
+      additional['width'] = 3 * cw * ui.CARD_PYRAMID_Y_PAD;
     } else {
       x = ui.UI_PAD + cw * ui.CARD_PYRAMID_X_PAD + cw / 2 - size / 2;
       y += h / 2 - size / 2 + ch / 2 + 2 * ui.UI_PAD;
     }
     return {
       ...additional,
-      transform: `translateX(${x}px) translateY(${y}px) rotateX(${
-        (1 - opacity) * 91
-      }deg)`,
+      transform: `translateX(${x}px) translateY(${y}px) rotateX(${(1 - opacity) * 91}deg)`,
       opacity: opacity,
       fontSize: size,
     };
   };
 
-  let statusText = "";
+  let statusText = '';
   switch (state.name) {
-    case "idle":
-      statusText = "Bereit?";
+    case 'idle':
+      statusText = 'Bereit?';
       break;
-    case "dealt":
-      if (state.previousState === "give") statusText = "Getrunken?";
+    case 'dealt':
+      if (state.previousState === 'give') statusText = 'Getrunken?';
       break;
-    case "give":
-      statusText = "Fertig?";
+    case 'give':
+      statusText = 'Fertig?';
       break;
     default:
-      statusText = "Error";
+      statusText = 'Error';
   }
 
   return (
     <div className="user-full-container">
       {[0, 1, 2].map((i) => (
         <Placeholder
+          renderObject={render}
           state={state}
           idx={idx}
           users={users}
           me={me}
           key={cidx(i)}
-          cidx={cidx(i)}
+          cidx={i}
         />
       ))}
       {users[idx] !== me ? (

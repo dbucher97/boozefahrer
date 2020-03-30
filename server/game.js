@@ -1,16 +1,16 @@
-const { randomStack, shuffle } = require("./stack");
+const { randomStack, shuffle } = require('./stack');
 
-const idleState = { name: "idle", previousState: "" };
+const idleState = { name: 'idle', previousState: '' };
 const dealtState = {
-  name: "dealt",
-  previousState: "idle",
+  name: 'dealt',
+  previousState: 'idle',
   rowsPlayed: 0,
   cardsPlayed: {},
 };
 const giveState = {
   ...dealtState,
-  name: "give",
-  previousState: "dealt",
+  name: 'give',
+  previousState: 'dealt',
   playedThisRow: {},
 };
 
@@ -32,7 +32,7 @@ class Game {
 
     if (existing) {
       return { error: `"${name}" ist bereits in "${this.room}"!` };
-    } else if (this.state.name !== "idle") {
+    } else if (this.state.name !== 'idle') {
       return { error: `"${this.room}" befindet sich momentan im Spiel!` };
     }
 
@@ -47,14 +47,14 @@ class Game {
 
     this.print(`${name} joined.`);
 
-    return { error: "" };
+    return { error: '' };
   }
 
   disconnected(id) {
     const idx = this.users.findIndex((user) => user.id === id);
     if (idx !== -1) {
       this.print(`${this.users[idx].name} left.`);
-      this.users[idx]["disconnected"] = true;
+      this.users[idx]['disconnected'] = true;
       if (
         this.users.reduce(({ disconnected }, user) => {
           return { disconnected: disconnected && user.disconnected };
@@ -63,7 +63,7 @@ class Game {
         this.users = [];
       }
     }
-    if (this.state.name === "idle") {
+    if (this.state.name === 'idle') {
       this.handleDisconnects();
     }
   }
@@ -82,7 +82,7 @@ class Game {
 
   advanceState() {
     switch (this.state.name) {
-      case "idle":
+      case 'idle':
         if (15 + this.users.length * 3 < this.stack.length) {
           this.state = dealtState;
           setTimeout(() => {
@@ -92,10 +92,10 @@ class Game {
           }, 2000);
         } else {
           // TODO send error
-          this.print("Not enough cards");
+          this.print('Not enough cards');
         }
         break;
-      case "dealt":
+      case 'dealt':
         if (this.state.rowsPlayed === 5) {
           this.state = idleState;
         } else {
@@ -105,13 +105,13 @@ class Game {
             cardsPlayed: this.state.cardsPlayed,
           };
         }
-        setTimeout(() => this.advanceState(), 20000);
+        //setTimeout(() => this.advanceState(), 20000);
 
         break;
-      case "give":
+      case 'give':
         this.state = {
           ...dealtState,
-          previousState: "give",
+          previousState: 'give',
           rowsPlayed: this.state.rowsPlayed + 1,
           cardsPlayed: {
             ...this.state.cardsPlayed,
@@ -123,7 +123,7 @@ class Game {
         this.state = idleState;
     }
     this.updateState();
-    if (this.state.name === "idle") {
+    if (this.state.name === 'idle') {
       this.handleDisconnects();
       this.stack = randomStack(this.settings.lowest);
       this.updateStack();
@@ -131,23 +131,23 @@ class Game {
   }
 
   updateStateOf(id) {
-    this.io.to(id).emit("update state", this.state);
+    this.io.to(id).emit('update state', this.state);
   }
 
   updateState() {
-    this.io.to(this.room).emit("update state", this.state);
+    this.io.to(this.room).emit('update state', this.state);
   }
 
   updateUsers() {
-    this.io.to(this.room).emit("update users", this.users);
+    this.io.to(this.room).emit('update users', this.users);
   }
 
   updateStack() {
-    this.io.to(this.room).emit("update stack", this.stack);
+    this.io.to(this.room).emit('update stack', this.stack);
   }
 
   messageAll(msg) {
-    this.io.to(this.room).emit("message", msg);
+    this.io.to(this.room).emit('message', msg);
   }
 
   getUser(id) {
@@ -175,15 +175,15 @@ class Game {
 
   playCard(id, { idx, onIdx }) {
     const user = this.getUser(id);
-    if (this.state.name === "give" && user) {
+    if (this.state.name === 'give' && user) {
       const cardPlayed = {};
-      cardPlayed[idx] = { onIdx, by: user.name, zIdx: 0 };
+      cardPlayed[idx] = { onIdx, by: user.name, zIndex: 0 };
       // evaluate stacking idx
       const sameOnIdx = Object.keys(this.state.playedThisRow).filter(
-        (key) => this.state.playedThisRow[key].onIdx === onIdx
+        (key) => this.state.playedThisRow[key].onIdx === onIdx,
       );
       if (sameOnIdx) {
-        cardPlayed[idx].zIdx = sameOnIdx.length;
+        cardPlayed[idx].zIndex = sameOnIdx.length;
       }
       this.state.playedThisRow = { ...this.state.playedThisRow, ...cardPlayed };
       this.updateState();
