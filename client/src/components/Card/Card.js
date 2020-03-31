@@ -44,7 +44,7 @@ const renderShape = () => {
 };
 
 const renderUser = () => {
-  const i = idx - ui.PYRAMID_CARDS;
+  const i = idx - settings.shape.total;
   const midx = users.findIndex((user) => user === me);
   const uidx = i % users.length;
   const ridx = Math.floor(i / users.length);
@@ -134,6 +134,46 @@ const renderGive = () => {
   }
 };
 
+const renderWho = () => {
+  if (state.cardsDealt.length > idx) {
+    const name = state.cardsDealt[idx].name;
+    const round = state.cardsDealt[idx].round;
+    const ridx = round % settings.playerCards;
+    const zIndex = Math.floor(round / settings.playerCards);
+    let delay = 0;
+    const sidx = state.cardsDealt.findIndex(({ round }) => round === state.round);
+    if (sidx < idx) {
+      delay = 0.1 * (idx - sidx);
+    }
+    if (state.users.findIndex((user) => user === name) === -1) {
+      return renderStack(render.fractional({ x: 0.5, y: 0.5 }), 0, 0, 1);
+    }
+    if (name === me.name) {
+      return {
+        scale: ui.USER_ME_CARD_SCALE,
+        flipped: false,
+        zIndex: zIndex,
+        customElevation: 5 * zIndex,
+        delay: delay,
+        pos: addPos(render.userMeCard(ridx), render.relative({ x: 0, y: 0.1 * zIndex })),
+      };
+    } else {
+      const uidx = users.findIndex((user) => name === user.name);
+      const midx = users.findIndex((user) => user === me);
+      const aidx = uidx < midx ? uidx : uidx - 1;
+      return {
+        scale: ui.USER_CARD_SCALE,
+        flipped: false,
+        customElevation: 5 * zIndex,
+        zIndex: zIndex,
+        delay: delay,
+        pos: addPos(render.userCard(aidx, ridx), render.relative({ x: 0, y: 0.1 * zIndex })),
+      };
+    }
+  }
+  return renderStack(render.fractional({ x: 0.5, y: 0.5 }), idx, cardsToStack, cardsInStack - cardsToStack);
+};
+
 const renderLayout = () => {
   switch (state.name) {
     case 'login':
@@ -144,8 +184,10 @@ const renderLayout = () => {
       return renderDealt();
     case 'give':
       return renderGive();
+    case 'who':
+      return renderWho();
     default:
-      return {};
+      return renderStack(render.fractional({ x: 0.5, y: 0.5 }), idx, 0, cardsInStack);
   }
 };
 
@@ -159,6 +201,9 @@ const Card = (props) => {
   cardsToUsers = settings.shape.total;
   cardsToStack = cardsToUsers + users.length * settings.playerCards;
   cardsInStack = ui.FULL_STACK - (settings.lowest - 2) * 4;
+  if (state.name === 'who') {
+    cardsToStack = Object.keys(state.cardsDealt).length;
+  }
   const [hover, setHover] = useState(false);
 
   const style = {
@@ -216,4 +261,3 @@ Card.propTypes = {
 };
 
 export default Card;
-export { renderUser };

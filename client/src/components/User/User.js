@@ -5,13 +5,13 @@ import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 import * as ui from '../../UIConstants';
 
-import { compileDefaultStyle, centered, addPos } from '../../Render';
+import { compileDefaultStyle, addPos } from '../../Render';
 
 import './User.css';
 import './../../App.css';
 
-const Placeholder = ({ state, render, isMe, ridx, uidx, user }) => {
-  const noShow = user.disconnected;
+const Placeholder = ({ state, render, isMe, ridx, uidx, user, hide }) => {
+  const noShow = user.disconnected || hide;
   const opacity = noShow ? 0 : 1;
   let scale;
   let pos;
@@ -46,9 +46,13 @@ Placeholder.propTypes = {
   isMe: PropTypes.bool,
   ridx: PropTypes.number,
   uidx: PropTypes.number,
+  hide: PropTypes.bool,
 };
 
 const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
+  const hide =
+    state.name === 'who' ? state.users.findIndex((name) => name === user.name) === -1 : state.name === 'bus';
+
   const compileCheckboxStyle = (pos, size) => {
     return compileDefaultStyle({
       pos: pos,
@@ -60,7 +64,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
   };
 
   const renderUser = () => {
-    const noShow = user.disconnected;
+    const noShow = user.disconnected || hide;
     const pos = render.user(uidx, noShow);
     const size = 24;
     const checkboxPos = addPos(
@@ -93,7 +97,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
 
   const renderMe = () => {
     const size = 32;
-    const noShow = user.disconnected;
+    const noShow = user.disconnected || hide;
     const pos = render.userMe(noShow);
     const checkboxPos = addPos(
       pos,
@@ -133,7 +137,16 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
   return (
     <div className="user-full-container">
       {[...Array(settings.playerCards).keys()].map((i) => (
-        <Placeholder state={state} render={render} isMe={isMe} ridx={i} uidx={uidx} key={i} user={user} />
+        <Placeholder
+          state={state}
+          render={render}
+          isMe={isMe}
+          ridx={i}
+          uidx={uidx}
+          key={i}
+          user={user}
+          hide={hide}
+        />
       ))}
       {isMe ? renderMe() : renderUser()}
     </div>
@@ -148,6 +161,7 @@ User.propTypes = {
   isMe: PropTypes.bool,
   toggleReady: PropTypes.func,
   settings: PropTypes.object,
+  hide: PropTypes.bool,
 };
 
 export default User;

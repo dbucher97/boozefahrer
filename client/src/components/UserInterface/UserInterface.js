@@ -24,12 +24,12 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, room }
   ];
 
   const statusText = () => {
-    const pos = addPos(render.fractional({ x: 0.5, y: state.name === 'idle' ? 0.2 : 0 }), {
-      x: 0,
-      y: ui.UI_PAD,
-    });
+    let pos = addPos(render.fractional({ x: 0.5, y: 0 }), { x: 0, y: ui.UI_PAD });
     let text;
+    let fontSize = 32;
     if (state.name === 'idle') {
+      fontSize = 48;
+      pos = addPos(pos, render.fractional({ x: 0, y: 0.15 }));
       text = (
         <span>
           Willkommen in <b>{room}</b>!
@@ -47,10 +47,29 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, room }
           Schlücke trinken! Noch <b>{state.timeLeft}</b> Sekunden
         </span>
       );
+    } else if (state.name === 'who') {
+      text = (
+        <span>
+          Wer muss Busfahren?
+          <br />
+          {state.users
+            .map((name) => <b key={name}>{name}</b>)
+            .reduce((prev, curr) => [prev, ' oder ', curr])}
+          ?
+        </span>
+      );
+    } else if (state.name === 'bus') {
+      fontSize = 48;
+      pos = addPos(pos, render.fractional({ x: 0, y: 0.15 }));
+      text = (
+        <span>
+          <b>{state.busfahrer}</b> fährt Bus!
+        </span>
+      );
     } else {
       return null;
     }
-    return render.centeredText(text, 600, { pos, fontSize: state.name === 'idle' ? 48 : 32 });
+    return render.centeredText(text, 600, { pos, fontSize: fontSize });
   };
 
   return (

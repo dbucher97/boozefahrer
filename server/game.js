@@ -6,14 +6,56 @@ const dealtState = {
   previousState: 'idle',
   rowsPlayed: 0,
   cardsPlayed: {},
-  timeLeft: 5,
+  timeLeft: 10,
 };
 const giveState = {
   ...dealtState,
   name: 'give',
   previousState: 'dealt',
   playedThisRow: {},
-  timeLeft: 5,
+  timeLeft: 10,
+};
+const whoState = {
+  name: 'who',
+  previousState: 'dealt',
+  round: 0,
+  cardsDealt: [],
+  users: [],
+};
+const busState = {
+  name: 'bus',
+  previousState: 'dealt',
+  currentStack: 0,
+  busfahrer: '',
+};
+
+const number = (a) => {
+  switch (a) {
+    case 'A':
+      return 14;
+    case 'K':
+      return 13;
+    case 'Q':
+      return 12;
+    case 'J':
+      return 11;
+    case 'T':
+      return 10;
+    default:
+      return parseInt(a);
+  }
+};
+
+const higher = (a, b) => {
+  return number(a[0]) > number(b[0]);
+};
+
+const eq = (a, b) => {
+  return number(a[0]) === number(b[0]);
+};
+
+const highereq = (a, b) => {
+  return number(a[0]) >= number(b[0]);
 };
 
 class Game {
@@ -23,7 +65,7 @@ class Game {
     this.room = room;
     this.users = [];
     this.state = idleState;
-    this.settings = { lowest: 4 };
+    this.settings = { lowest: 4, playerCards: 3 };
     this.stack = randomStack(this.settings.lowest);
     //  this.stateToken = true;
   }
@@ -64,6 +106,21 @@ class Game {
       ) {
         this.users = [];
       }
+      if (this.state.name === 'who') {
+        const sidx = this.state.users.findIndex((name) => name === this.users[idx].name);
+        if (sidx >= 0) {
+          this.state.users.splice(sidx, 1);
+          if (this.state.users.length === 1) {
+            this.advanceState();
+          } else {
+            this.updateState();
+          }
+        }
+      } else if (this.state.name === 'bus' && this.state.busfahrer === this.users[idx].name) {
+        this.state = idleState;
+        this.shuffle();
+        this.updateState();
+      }
       this.updateUsers();
     }
     if (this.state.name === 'idle') {
@@ -89,7 +146,7 @@ class Game {
     }
     switch (this.state.name) {
       case 'idle':
-        if (15 + this.users.length * 3 < this.stack.length) {
+        if (15 + this.users.length * this.settings.playerCards < this.stack.length) {
           this.state = dealtState;
           setTimeout(() => {
             this.users.map((user) => (user.ready = false));
@@ -102,8 +159,27 @@ class Game {
         }
         break;
       case 'dealt':
-        if (this.state.rowsPlayed === 5) {
-          this.state = idleState;
+        if (this.state.rowsPlayed === 1) {
+          const cardsPlayed = this.users
+            .filter(({ disconnected }) => !disconnected)
+            .map(
+              (user) =>
+                this.settings.playerCards -
+                Object.values(this.state.cardsPlayed).filter(({ by }) => by === user.name).length,
+            );
+          const maxCards = Math.max(...cardsPlayed);
+          const users = this.users
+            .filter(({ disconnected }) => !disconnected)
+            .filter((_, idx) => cardsPlayed[idx] === maxCards);
+          this.state = { ...whoState };
+          if (users.length > 1) {
+            this.state.users = users.map(({ name }) => name);
+            this.chooseBusfahrer();
+          } else {
+            this.advanceState();
+            return;
+          }
+          this.shuffle();
         } else {
           this.state = {
             ...giveState,
@@ -125,15 +201,55 @@ class Game {
         };
         this.countdown();
         break;
+      case 'who':
+        this.state = { ...busState, busfahrer: this.state.users[0] };
+        setTimeout(() => this.advanceState(), 2000);
+        break;
       default:
         this.state = idleState;
     }
     this.updateState();
     if (this.state.name === 'idle') {
       this.handleDisconnects();
-      this.stack = randomStack(this.settings.lowest);
-      this.updateStack();
+      this.shuffle();
     }
+  }
+
+  chooseBusfahrerLogic() {
+    this.state.cardsDealt = this.state.cardsDealt.concat(
+      this.state.users.map((name) => ({ name, round: this.state.round })),
+    );
+    this.updateState();
+    setTimeout(() => {
+      const size = this.state.users.length;
+      const total = this.state.cardsDealt.length;
+      const faces = this.state.users.map((_, idx) => this.stack[total - size + idx]);
+      const lowest = faces.reduce((lowestFace, currentFace) => {
+        return higher(currentFace, lowestFace) ? lowestFace : currentFace;
+      });
+      const usersLeft = this.state.users.filter((_, idx) => eq(faces[idx], lowest));
+      this.state.users = usersLeft;
+      if (usersLeft.length === 1) {
+        this.advanceState();
+      } else {
+        this.updateState();
+        this.state.round += 1;
+      }
+    }, 3000);
+  }
+
+  chooseBusfahrer() {
+    setTimeout(() => {
+      this.chooseBusfahrerLogic();
+      this.timer = setInterval(() => {
+        this.chooseBusfahrerLogic();
+      }, 4000);
+    }, 1000);
+  }
+
+  shuffle() {
+    this.stack = randomStack(this.settings.lowest);
+    this.updateStack();
   }
 
   countdown() {
@@ -174,22 +290,24 @@ class Game {
   }
 
   toggleReady(id) {
-    const user = this.getUser(id);
-    if (user) {
-      user.ready = !user.ready;
+    if (this.state.name !== 'who' && this.state.name !== 'bus') {
+      const user = this.getUser(id);
+      if (user) {
+        user.ready = !user.ready;
+      }
+      if (
+        this.users.reduce(({ ready, disconnected }, user) => {
+          return {
+            ready: (ready || disconnected) & (user.ready || user.disconnected),
+            disconnected: false,
+          };
+        }).ready
+      ) {
+        this.users.map((user) => (user.ready = false));
+        this.advanceState();
+      }
+      this.updateUsers();
     }
-    if (
-      this.users.reduce(({ ready, disconnected }, user) => {
-        return {
-          ready: (ready || disconnected) & (user.ready || user.disconnected),
-          disconnected: false,
-        };
-      }).ready
-    ) {
-      this.users.map((user) => (user.ready = false));
-      this.advanceState();
-    }
-    this.updateUsers();
   }
 
   playCard(id, { idx, onIdx }) {
@@ -209,8 +327,8 @@ class Game {
     }
   }
 
-  print(msg) {
-    console.log(`[${this.room}]\t`, msg);
+  print(...msg) {
+    console.log(`[${this.room}]\t`, ...msg);
   }
 }
 

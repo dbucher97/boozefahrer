@@ -27,16 +27,16 @@ const io = require('socket.io-client');
  */
 
 const loginState = { name: 'login', previousState: '' };
-const dealtState = {
-  name: 'dealt',
-  previousState: 'idle',
-  rowsPlayed: 0,
-  cardsPlayed: {},
-};
-const idleState = {
-  name: 'idle',
-  previousState: 'login',
-};
+// const dealtState = {
+//   name: 'dealt',
+//   previousState: 'idle',
+//   rowsPlayed: 0,
+//   cardsPlayed: {},
+// };
+// const idleState = {
+//   name: 'idle',
+//   previousState: 'login',
+// };
 const orderedStack = [
   'AS',
   'AC',
@@ -105,7 +105,7 @@ const Game = () => {
   const [login, setLogin] = useState({
     room: 'Test',
     // name: 'Me',
-    name: Math.random().toString(36).substring(2) + 'Test123eedsaggfsg',
+    name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
@@ -127,6 +127,7 @@ const Game = () => {
   useEffect(() => {
     socket = io(ENDPOINT);
     socket.on('update state', (state) => {
+      // console.log(state);
       setState(state);
     });
     socket.on('update users', (users) => setUsers(users));

@@ -110,7 +110,7 @@ const Render = class {
       addPos(
         this.fractional({ x: 0.5, y: 0.5 }),
         this.relative({ x: ridx * ui.CARD_SHAPE_X_PAD, y: (row - 1) * ui.CARD_SHAPE_Y_PAD }),
-        { x: 0, y: 2 * ui.UI_PAD },
+        { x: 0, y: ui.UI_PAD },
       ),
       this.relative({
         x: (rowLength - 1) * ui.CARD_SHAPE_X_PAD + 1,
