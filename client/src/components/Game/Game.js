@@ -105,7 +105,7 @@ const Game = () => {
   const [login, setLogin] = useState({
     room: 'Test',
     // name: 'Me',
-    name: Math.random().toString(36).substring(6),
+    name: Math.random().toString(36).substring(2) + 'Test123eedsaggfsg',
     error: null,
     waitingForCallback: false,
   });
@@ -133,14 +133,14 @@ const Game = () => {
     socket.on('update stack', (stack) => setStack(stack));
     socket.on('message', (msg) => console.log(msg));
     // debug;
-    // socket.emit(
-    //   "join",
-    //   {
-    //     room: login.room,
-    //     name: login.name,
-    //   },
-    //   () => null
-    // );
+    socket.emit(
+      'join',
+      {
+        room: login.room,
+        name: login.name,
+      },
+      () => null,
+    );
   }, []);
 
   const toggleReady = () => {
@@ -236,6 +236,7 @@ const Game = () => {
         state={state}
         me={me}
         settings={settings}
+        room={login.room}
         toggleReady={toggleReady}
       />
       {stack.map((item, idx) => {

@@ -162,12 +162,13 @@ const Card = (props) => {
   const [hover, setHover] = useState(false);
 
   const style = {
+    flipped: true,
     ...renderLayout(idx, state, users, me),
     width: render.cardWidth,
     height: render.cardHeight,
     hover: hover,
   };
-  const compiledStyle = compileDefaultStyle(style);
+  const compiledStyle = compileDefaultStyle({ ...style, opacity: 1 });
 
   return (
     <div
@@ -184,7 +185,9 @@ const Card = (props) => {
           : null
       }
     >
-      <div className="card-inner-background" style={{ borderRadius: `${render.cardWidth / 20}px` }} />
+      {state.cardsPlayed && state.cardsPlayed[props.idx] ? (
+        <div className="card-inner-background" style={{ borderRadius: `${render.cardWidth / 20}px` }} />
+      ) : null}
       <img
         style={style.flipped ? {} : { opacity: style.opacity }}
         className="card"

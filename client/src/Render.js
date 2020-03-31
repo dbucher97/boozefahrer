@@ -1,9 +1,12 @@
+import React from 'react';
 import * as ui from './UIConstants';
 import Pyramid from './shapes/Pyramid';
 
+import './App.css';
+
 const defaultStyle = {
-  width: 0,
-  height: 0,
+  width: null,
+  height: null,
   clickable: false,
   zIndex: 0,
   pos: { x: 0, y: 0 },
@@ -12,7 +15,10 @@ const defaultStyle = {
   transitionDelay: 0,
   delay: 0,
   rotateZ: 0,
-  flipped: true,
+  rotateX: 0,
+  flipped: false,
+  opacity: 1,
+  fontSize: 18,
 };
 
 const compileDefaultStyle = (customStyle) => {
@@ -24,16 +30,19 @@ const compileDefaultStyle = (customStyle) => {
     position: 'absolute',
     top: 0,
     left: 0,
+    fontSize: style.fontSize,
     width: style.width,
     height: style.height,
     cursor: style.clickable ? 'pointer' : 'default',
     zIndex: style.zIndex,
+    opacity: style.opacity,
     transitionDelay: `${style.delay}s`,
     transform: `translateX(${style.pos.x}px)
                 translateY(${style.pos.y}px)
                 scale(${style.scale})
                 translateZ(${style.elevation + (style.clickable && style.hover ? ui.HOVER_ELEVATION : 0)}px)
                 rotateY(${style.flipped ? 180 : 0}deg)
+                rotateX(${style.rotateX}deg)
                 rotateZ(${style.rotateZ}deg)
                 scale(${elevationScale})`,
   };
@@ -101,6 +110,7 @@ const Render = class {
       addPos(
         this.fractional({ x: 0.5, y: 0.5 }),
         this.relative({ x: ridx * ui.CARD_SHAPE_X_PAD, y: (row - 1) * ui.CARD_SHAPE_Y_PAD }),
+        { x: 0, y: 2 * ui.UI_PAD },
       ),
       this.relative({
         x: (rowLength - 1) * ui.CARD_SHAPE_X_PAD + 1,
@@ -157,7 +167,7 @@ const Render = class {
     return addPos(
       this.fractional({ x: 1, y: 0 }),
       {
-        x: !noShow ? -ui.UI_PAD - ui.USER_CARD_WIDTH - ui.UI_PAD * 0.5 : ui.UI_PAD,
+        x: !noShow ? -ui.UI_PAD - ui.USER_CARD_WIDTH : 2 * ui.UI_PAD,
         y: ui.UI_PAD + ui.UI_PAD * uidx,
       },
       this.relative({
@@ -170,8 +180,17 @@ const Render = class {
   userCard(uidx, idx, noShow) {
     return addPos(
       this.compensate(ui.USER_CARD_SCALE),
-      this.relative({ x: -idx * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD, y: 0 }),
+      this.relative({ x: -(idx + 1) * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD, y: 0 }),
       this.user(uidx, noShow),
+    );
+  }
+
+  centeredText(text, maxWidth, style) {
+    style.pos = centered(style.pos, { x: maxWidth, y: 0 });
+    return (
+      <div className="centered-text" style={{ ...compileDefaultStyle(style), width: maxWidth }}>
+        {text}
+      </div>
     );
   }
 };

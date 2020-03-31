@@ -6,12 +6,14 @@ const dealtState = {
   previousState: 'idle',
   rowsPlayed: 0,
   cardsPlayed: {},
+  timeLeft: 5,
 };
 const giveState = {
   ...dealtState,
   name: 'give',
   previousState: 'dealt',
   playedThisRow: {},
+  timeLeft: 5,
 };
 
 class Game {
@@ -39,9 +41,9 @@ class Game {
     this.users.push({ id: socket.id, name, ready: false, disconnected: false });
 
     socket.join(this.room);
+    this.updateStateOf(socket.id);
     this.updateUsers();
     this.updateStack();
-    this.updateStateOf(socket.id);
 
     this.messageAll(`${name} ist beigetreten.`);
 
@@ -62,6 +64,7 @@ class Game {
       ) {
         this.users = [];
       }
+      this.updateUsers();
     }
     if (this.state.name === 'idle') {
       this.handleDisconnects();
@@ -81,6 +84,9 @@ class Game {
   }
 
   advanceState() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
     switch (this.state.name) {
       case 'idle':
         if (15 + this.users.length * 3 < this.stack.length) {
@@ -89,7 +95,7 @@ class Game {
             this.users.map((user) => (user.ready = false));
             this.updateUsers();
             this.advanceState();
-          }, 2000);
+          }, 1000);
         } else {
           // TODO send error
           this.print('Not enough cards');
@@ -104,9 +110,8 @@ class Game {
             rowsPlayed: this.state.rowsPlayed,
             cardsPlayed: this.state.cardsPlayed,
           };
+          this.countdown();
         }
-        //setTimeout(() => this.advanceState(), 20000);
-
         break;
       case 'give':
         this.state = {
@@ -118,6 +123,7 @@ class Game {
             ...this.state.playedThisRow,
           },
         };
+        this.countdown();
         break;
       default:
         this.state = idleState;
@@ -128,6 +134,19 @@ class Game {
       this.stack = randomStack(this.settings.lowest);
       this.updateStack();
     }
+  }
+
+  countdown() {
+    this.timer = setInterval(() => {
+      this.state.timeLeft -= 1;
+      if (this.state.timeLeft == 0) {
+        this.users.map((user) => (user.ready = false));
+        this.updateUsers();
+        this.advanceState();
+      } else {
+        this.updateState();
+      }
+    }, 1000);
   }
 
   updateStateOf(id) {
