@@ -93,7 +93,16 @@ const renderDealt = () => {
 
 const renderLogin = () => {
   return {
-    ...renderStack({ x: ui.STACK_X, y: ui.STACK_Y }, idx, 0, cardsInStack),
+    ...renderStack(
+      addPos(render.fractional({ x: 0.5, y: 0.5 }), render.relative({ x: -ui.CARD_LOGIN_SCALE, y: 0 }), {
+        x: -ui.UI_PAD / 2,
+        y: 0,
+      }),
+      idx,
+      0,
+      5,
+    ),
+    flipped: idx !== 0,
     scale: ui.CARD_LOGIN_SCALE,
   };
 };

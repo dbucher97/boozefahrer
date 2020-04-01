@@ -19,6 +19,7 @@ const defaultStyle = {
   flipped: false,
   opacity: 1,
   fontSize: 18,
+  fontWeight: 'normal',
 };
 
 const compileDefaultStyle = (customStyle) => {
@@ -31,9 +32,10 @@ const compileDefaultStyle = (customStyle) => {
     top: 0,
     left: 0,
     fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
     width: style.width,
     height: style.height,
-    cursor: style.clickable ? 'pointer' : 'default',
+    cursor: style.clickable ? 'pointer' : null,
     zIndex: style.zIndex,
     opacity: style.opacity,
     transitionDelay: `${style.delay}s`,

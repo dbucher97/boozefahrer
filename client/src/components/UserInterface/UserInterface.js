@@ -28,7 +28,9 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, busAct
     let pos = addPos(render.fractional({ x: 0.5, y: 0 }), { x: 0, y: ui.UI_PAD });
     let text;
     let fontSize = 32;
-    if (state.name === 'idle') {
+    if (state.name === 'login') {
+      fontSize = 48;
+    } else if (state.name === 'idle') {
       fontSize = 48;
       pos = addPos(pos, render.fractional({ x: 0, y: 0.15 }));
       text = (
@@ -106,6 +108,9 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, busAct
       {state.name === 'bus' && state.busfahrer !== me.name ? (
         <BusDisplay state={state} render={render} />
       ) : null}
+      {render.centeredText('Kais B-Day Edition! 🎂', 300, {
+        pos: addPos({ x: 170, y: -2 * ui.UI_PAD }, render.fractional({ x: 0, y: 1 })),
+      })}
     </div>
   );
 };

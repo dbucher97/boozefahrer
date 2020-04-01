@@ -16,8 +16,6 @@ const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
   : window.location.href;
 
-console.log(ENDPOINT);
-
 const io = require('socket.io-client');
 
 /* States
@@ -207,7 +205,7 @@ const Game = () => {
           clearTimeout(loginTimer);
         }
       });
-      setLogin({ ...login, waitingForCallback: true });
+      setLogin({ ...login, name, room, waitingForCallback: true });
     }
   };
 

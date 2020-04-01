@@ -162,6 +162,7 @@ const BusDisplay = ({ state, render }) => {
       draggable={false}
       src={emoji}
       style={compileDefaultStyle({ pos, width: size, height: size, rotateX: rotation, opactity: opactity })}
+      alt=""
     />
   );
 };
