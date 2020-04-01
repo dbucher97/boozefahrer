@@ -6,14 +6,14 @@ const dealtState = {
   previousState: 'idle',
   rowsPlayed: 0,
   cardsPlayed: {},
-  timeLeft: 20,
+  timeLeft: 60,
 };
 const giveState = {
   ...dealtState,
   name: 'give',
   previousState: 'dealt',
   playedThisRow: {},
-  timeLeft: 60,
+  timeLeft: 20,
 };
 const whoState = {
   name: 'who',

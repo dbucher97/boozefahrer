@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import getWindowDimensions from '../../util/WindowDimensions';
@@ -6,13 +6,15 @@ import * as ui from '../../UIConstants';
 
 import './LoginPage.css';
 
-const LoginPage = ({ gamestate, onSubmit, login, setLogin }) => {
+const LoginPage = ({ state, render, onSubmit, error, disabled }) => {
   const { width, height } = getWindowDimensions();
+  const [name, setName] = useState('');
+  const [room, setRoom] = useState('');
 
   const compileTitle = () => {
     let y = height * 0.2;
     let opacity = 1.0;
-    if (gamestate.name !== 'login') {
+    if (state.name !== 'login') {
       y = -0.5 * height;
       opacity = 0.0;
     }
@@ -31,7 +33,7 @@ const LoginPage = ({ gamestate, onSubmit, login, setLogin }) => {
     let x = 0.5 * width - totalWidth / 2 + cardW + padding;
     let y = 0.6 * height - h / 2;
     let opacity = 1;
-    if (gamestate.name !== 'login') {
+    if (state.name !== 'login') {
       y = 1.5 * height;
       opacity = 0.0;
     }
@@ -53,7 +55,7 @@ const LoginPage = ({ gamestate, onSubmit, login, setLogin }) => {
         style={compileLoginBox()}
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit();
+          onSubmit(name, room);
         }}
       >
         <input
@@ -61,36 +63,32 @@ const LoginPage = ({ gamestate, onSubmit, login, setLogin }) => {
           placeholder="Raum"
           type="text"
           name="room"
-          onChange={(e) => setLogin({ ...login, room: e.target.value.trim() })}
-          disabled={login.waitingForCallback || gamestate.name !== 'login'}
-          onKeyPress={(e) => (e.key === 'Enter' ? onSubmit() : null)}
+          onChange={(e) => setRoom(e.target.value.trim())}
+          disabled={disabled}
+          onKeyPress={(e) => (e.key === 'Enter' ? onSubmit(name, room) : null)}
         />
         <input
           className="login-item"
           placeholder="Name"
           type="text"
           name="name"
-          disabled={login.waitingForCallback || gamestate.name !== 'login'}
-          onChange={(e) => setLogin({ ...login, name: e.target.value.trim() })}
-          onKeyPress={(e) => (e.key === 'Enter' ? onSubmit() : null)}
+          disabled={disabled}
+          onChange={(e) => setName(e.target.value.trim())}
+          onKeyPress={(e) => (e.key === 'Enter' ? onSubmit(name, room) : null)}
         />
-        {login.error ? <div className="login-item login-item-errormsg">{login.error}</div> : null}
-        <input
-          type="submit"
-          value="Go"
-          className="login-item login-button"
-          disabled={login.waitingForCallback || gamestate.name !== 'login'}
-        />
+        {error ? <div className="login-item login-item-errormsg">{error}</div> : null}
+        <input type="submit" value="Go" className="login-item login-button" disabled={disabled} />
       </form>
     </div>
   );
 };
 
 LoginPage.propTypes = {
-  gamestate: PropTypes.object,
+  state: PropTypes.object,
+  render: PropTypes.object,
   onSubmit: PropTypes.func,
-  login: PropTypes.object,
-  setLogin: PropTypes.func,
+  error: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default LoginPage;

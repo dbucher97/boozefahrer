@@ -27,10 +27,10 @@ const Placeholder = ({ state, render, isMe, ridx, uidx, user, hide }) => {
   }
 
   const style = compileDefaultStyle({
-    pos: addPos(pos, { x: -thickness, y: -thickness }),
+    pos: addPos(pos, { x: -thickness / 2 - 1, y: -thickness / 2 - 1 }),
     opacity,
-    width: render.cardWidth,
-    height: render.cardHeight,
+    width: render.cardWidth - thickness / 2,
+    height: render.cardHeight - thickness / 2,
     scale: scale,
   });
 

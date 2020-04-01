@@ -14,8 +14,6 @@ import Pyramid from '../../shapes/Pyramid';
 
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
-  : window.location.href.includes('10.21.254.18')
-  ? 'http://10.21.254.18:4001'
   : 'window.location.href';
 const io = require('socket.io-client');
 
@@ -37,63 +35,11 @@ const loginState = { name: 'login', previousState: '' };
 //   name: 'idle',
 //   previousState: 'login',
 // };
-const orderedStack = [
-  'AS',
-  'AC',
-  'AD',
-  'AH',
-  'KS',
-  'KC',
-  'KD',
-  'KH',
-  'QS',
-  'QC',
-  'QD',
-  'QH',
-  'JS',
-  'JC',
-  'JD',
-  'JH',
-  'TS',
-  'TC',
-  'TD',
-  'TH',
-  '9S',
-  '9C',
-  '9D',
-  '9H',
-  '8S',
-  '8C',
-  '8D',
-  '8H',
-  '7S',
-  '7C',
-  '7D',
-  '7H',
-  '6S',
-  '6C',
-  '6D',
-  '6H',
-  '5S',
-  '5C',
-  '5D',
-  '5H',
-  '4S',
-  '4C',
-  '4D',
-  '4H',
-  '3S',
-  '3C',
-  '3D',
-  '3H',
-  '2S',
-  '2C',
-  '2D',
-  '2H',
-];
+const orderedStack = ['3D', 'AS', 'AC', 'AD', 'AH'];
 
 let socket;
 let render;
+let loginTimer;
 
 let me = { name: 'me', disconnected: true };
 
@@ -178,7 +124,6 @@ const Game = () => {
   const handleOnKeyPress = (e) => {
     switch (e.key) {
       case ' ':
-      case 'Enter':
         e.preventDefault();
         toggleReady();
         break;
@@ -241,28 +186,37 @@ const Game = () => {
     }
   };
 
-  const handleOnLoginSubmit = () => {
-    if (!login.name || !login.room) {
-      const s = !login.name && !login.room ? 'Raum und Name' : !login.name ? 'Name' : 'Raum';
+  const handleOnLoginSubmit = (name, room) => {
+    if (!name || !room) {
+      const s = !name && !room ? 'Raum und Name' : !name ? 'Name' : 'Raum';
       setLogin({ ...login, error: `Bitte ${s} ausfüllen!` });
     } else {
-      socket.emit('join', { name: login.name, room: login.room }, ({ error }) => {
-        setLogin({ ...login, error, waitingForCallback: false });
-      });
-      setLogin({ ...login, waitingForCallback: true });
-      setTimeout(() => {
+      loginTimer = setTimeout(() => {
         setLogin({
           ...login,
           waitingForCallback: false,
           error: 'Server antwortet nicht!',
         });
       }, 5000);
+      socket.emit('join', { name, room }, ({ error }) => {
+        setLogin({ ...login, name, room, error, waitingForCallback: false });
+        if (loginTimer) {
+          clearTimeout(loginTimer);
+        }
+      });
+      setLogin({ ...login, waitingForCallback: true });
     }
   };
 
   return (
     <div>
-      <LoginPage gamestate={state} onSubmit={handleOnLoginSubmit} login={login} setLogin={setLogin} />
+      <LoginPage
+        state={state}
+        render={render}
+        onSubmit={handleOnLoginSubmit}
+        error={login.error}
+        disabled={login.waitingForCallback || state.name !== 'login'}
+      />
       <UserInterface
         users={users}
         render={render}
