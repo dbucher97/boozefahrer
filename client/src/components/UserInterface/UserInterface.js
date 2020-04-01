@@ -69,7 +69,7 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, room }
     } else {
       return null;
     }
-    return render.centeredText(text, 600, { pos, fontSize: fontSize });
+    return render.centeredText(text, render.fractional({ x: 1 / 3, y: 0 }).x, { pos, fontSize: fontSize });
   };
 
   return (

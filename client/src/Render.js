@@ -167,11 +167,13 @@ const Render = class {
     return addPos(
       this.fractional({ x: 1, y: 0 }),
       {
-        x: !noShow ? -ui.UI_PAD - ui.USER_CARD_WIDTH : 2 * ui.UI_PAD,
+        x: !noShow ? -ui.UI_PAD : 2 * ui.UI_PAD,
         y: ui.UI_PAD + ui.UI_PAD * uidx,
       },
       this.relative({
-        x: noShow ? this.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD : 0,
+        x: noShow
+          ? this.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD
+          : -ui.USER_CARD_WIDTH * ui.USER_CARD_SCALE,
         y: uidx * ui.USER_CARD_SCALE,
       }),
     );
@@ -187,11 +189,21 @@ const Render = class {
 
   centeredText(text, maxWidth, style) {
     style.pos = centered(style.pos, { x: maxWidth, y: 0 });
+    const compiledStyle = compileDefaultStyle(style);
+    compiledStyle.fontSize = this.scaledFont(compiledStyle.fontSize);
     return (
-      <div className="centered-text" style={{ ...compileDefaultStyle(style), width: maxWidth }}>
+      <div className="centered-text" style={{ ...compiledStyle, width: maxWidth }}>
         {text}
       </div>
     );
+  }
+
+  scaled(val) {
+    return (val * this.cardHeight) / 100;
+  }
+
+  scaledFont(val) {
+    return 6 + (val * this.cardHeight) / 120;
   }
 };
 

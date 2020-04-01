@@ -30,7 +30,7 @@ export const TRANSITION_RANDOMNESS = 0.02;
 
 export const USER_ME_CARD_SCALE = 1.3;
 export const USER_CARD_SCALE = 0.8;
-export const USER_CARD_WIDTH = 180;
+export const USER_CARD_WIDTH = 3;
 export const UI_PAD = 30;
 
 export const CARD_VIEW_SCALE = 1.2;

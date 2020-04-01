@@ -145,7 +145,9 @@ const renderWho = () => {
     if (sidx < idx) {
       delay = 0.1 * (idx - sidx);
     }
-    if (state.users.findIndex((user) => user === name) === -1) {
+    const user = users.find((user) => user.name === name);
+    const disconnected = user && user.disconnected;
+    if (state.users.findIndex((user) => user === name) === -1 || disconnected) {
       return renderStack(render.fractional({ x: 0.5, y: 0.5 }), 0, 0, 1);
     }
     if (name === me.name) {

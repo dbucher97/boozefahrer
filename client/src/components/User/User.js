@@ -13,6 +13,8 @@ import './../../App.css';
 const Placeholder = ({ state, render, isMe, ridx, uidx, user, hide }) => {
   const noShow = user.disconnected || hide;
   const opacity = noShow ? 0 : 1;
+  const thickness = render.scaled(4);
+  const radius = render.scaled(5);
   let scale;
   let pos;
 
@@ -25,7 +27,7 @@ const Placeholder = ({ state, render, isMe, ridx, uidx, user, hide }) => {
   }
 
   const style = compileDefaultStyle({
-    pos: addPos(pos, { x: -4, y: -4 }),
+    pos: addPos(pos, { x: -thickness, y: -thickness }),
     opacity,
     width: render.cardWidth,
     height: render.cardHeight,
@@ -33,7 +35,7 @@ const Placeholder = ({ state, render, isMe, ridx, uidx, user, hide }) => {
   });
 
   return (
-    <div className="placeholder" style={style}>
+    <div className="placeholder" style={{ ...style, borderWidth: thickness, borderRadius: radius }}>
       <div className="placeholder-inner" />
     </div>
   );
@@ -66,7 +68,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
   const renderUser = () => {
     const noShow = user.disconnected || hide;
     const pos = render.user(uidx, noShow);
-    const size = 24;
+    const size = render.scaledFont(24);
     const checkboxPos = addPos(
       render.relative({
         x: -settings.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD,
@@ -74,18 +76,24 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
       }),
       { x: -size - ui.UI_PAD / 2, y: -size / 2 },
     );
+    const dimensions = render.relative({
+      x: ui.USER_CARD_WIDTH * ui.USER_CARD_SCALE,
+      y: ui.USER_CARD_SCALE,
+    });
     return (
       <div
         className="box-container"
         style={compileDefaultStyle({
           pos,
-          width: ui.USER_CARD_WIDTH,
-          height: render.cardHeight * ui.USER_CARD_SCALE,
+          width: dimensions.x,
+          height: dimensions.y,
         })}
       >
         <div className="user-container" style={{ opacity: noShow ? 0 : 1 }}>
           <div className="box-inner-container">
-            <div className="user-title">{user.name}</div>
+            <div className="user-title" style={{ fontSize: render.scaledFont(16) }}>
+              {user.name}
+            </div>
           </div>
           <div className="checkbox" style={compileCheckboxStyle(checkboxPos, size)}>
             <FontAwesomeIcon icon={faCheckCircle} style={{ fontSize: `${size}px` }} />
@@ -96,7 +104,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
   };
 
   const renderMe = () => {
-    const size = 32;
+    const size = render.scaledFont(32);
     const noShow = user.disconnected || hide;
     const pos = render.userMe(noShow);
     const checkboxPos = addPos(

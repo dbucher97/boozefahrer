@@ -112,14 +112,11 @@ class Game {
           this.state.users.splice(sidx, 1);
           if (this.state.users.length === 1) {
             this.advanceState();
-          } else {
-            this.updateState();
           }
         }
       } else if (this.state.name === 'bus' && this.state.busfahrer === this.users[idx].name) {
         this.state = idleState;
-        this.shuffle();
-        this.updateState();
+        this.advanceState();
       }
       this.updateUsers();
     }
@@ -143,6 +140,9 @@ class Game {
   advanceState() {
     if (this.timer) {
       clearInterval(this.timer);
+    }
+    if (this.timeout) {
+      clearTimeout(this.timeout);
     }
     switch (this.state.name) {
       case 'idle':
@@ -212,6 +212,7 @@ class Game {
     if (this.state.name === 'idle') {
       this.handleDisconnects();
       this.shuffle();
+      this.updateStack();
     }
   }
 
@@ -220,7 +221,7 @@ class Game {
       this.state.users.map((name) => ({ name, round: this.state.round })),
     );
     this.updateState();
-    setTimeout(() => {
+    this.timeout = setTimeout(() => {
       const size = this.state.users.length;
       const total = this.state.cardsDealt.length;
       const faces = this.state.users.map((_, idx) => this.stack[total - size + idx]);
@@ -239,7 +240,7 @@ class Game {
   }
 
   chooseBusfahrer() {
-    setTimeout(() => {
+    this.timeout = setTimeout(() => {
       this.chooseBusfahrerLogic();
       this.timer = setInterval(() => {
         this.chooseBusfahrerLogic();
