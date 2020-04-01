@@ -2,11 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import User from '../User/User';
+import BusControl, { BusDisplay } from '../BusControl/BusControl';
 import * as ui from '../../UIConstants';
 
 import { addPos } from '../../Render';
 
-const UserInterface = ({ state, render, settings, users, me, toggleReady, room }) => {
+const UserInterface = ({ state, render, settings, users, me, toggleReady, busAction, room }) => {
   const midx = Math.max(
     users.findIndex((user) => user === me),
     0,
@@ -60,16 +61,23 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, room }
       );
     } else if (state.name === 'bus') {
       fontSize = 48;
-      pos = addPos(pos, render.fractional({ x: 0, y: 0.15 }));
-      text = (
-        <span>
-          <b>{state.busfahrer}</b> fährt Bus!
-        </span>
-      );
+      if (state.busfahrer === me.name) {
+        text = (
+          <span>
+            <b>Du</b> fährst Bus!
+          </span>
+        );
+      } else {
+        text = (
+          <span>
+            <b>{state.busfahrer}</b> fährt Bus!
+          </span>
+        );
+      }
     } else {
       return null;
     }
-    return render.centeredText(text, render.fractional({ x: 1 / 3, y: 0 }).x, { pos, fontSize: fontSize });
+    return render.centeredText(text, render.fractional({ x: 2 / 5, y: 0 }).x, { pos, fontSize: fontSize });
   };
 
   return (
@@ -87,6 +95,17 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, room }
           toggleReady={toggleReady}
         />
       ))}
+      <BusControl
+        state={state}
+        render={render}
+        higher={() => busAction('higher')}
+        lower={() => busAction('lower')}
+        equal={() => busAction('equal')}
+        hide={!(state.name === 'bus' && state.busfahrer === me.name)}
+      />
+      {state.name === 'bus' && state.busfahrer !== me.name ? (
+        <BusDisplay state={state} render={render} />
+      ) : null}
     </div>
   );
 };
@@ -98,6 +117,7 @@ UserInterface.propTypes = {
   settings: PropTypes.object,
   me: PropTypes.object,
   toggleReady: PropTypes.func,
+  busAction: PropTypes.func,
   room: PropTypes.string,
 };
 

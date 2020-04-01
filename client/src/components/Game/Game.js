@@ -103,9 +103,9 @@ const Game = () => {
   const [users, setUsers] = useState([me]);
   const [stack, setStack] = useState(orderedStack);
   const [login, setLogin] = useState({
-    room: 'Test',
-    // name: 'Me',
-    name: Math.random().toString(36).substring(6),
+    room: '',
+    name: '',
+    // name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
@@ -117,6 +117,7 @@ const Game = () => {
 
   if (state.name !== 'login') {
     me = getMe(users, login.name);
+    if (!me) me = users[0];
   }
   render = new Render(window, settings, users, me);
 
@@ -134,18 +135,22 @@ const Game = () => {
     socket.on('update stack', (stack) => setStack(stack));
     socket.on('message', (msg) => console.log(msg));
     // debug;
-    socket.emit(
-      'join',
-      {
-        room: login.room,
-        name: login.name,
-      },
-      () => null,
-    );
+    // socket.emit(
+    //   'join',
+    //   {
+    //     room: login.room,
+    //     name: login.name,
+    //   },
+    //   () => null,
+    // );
   }, []);
 
   const toggleReady = () => {
-    if (me && !(state.name === 'dealt' && state.previousState === 'idle')) {
+    if (
+      me &&
+      !(state.name === 'dealt' && state.previousState === 'idle') &&
+      !(state.name === 'who' || state.name === 'bus')
+    ) {
       const users_copy = [...users];
       const idx = users_copy.findIndex((user) => user.name === login.name);
       if (idx !== -1) {
@@ -153,6 +158,13 @@ const Game = () => {
       }
       setUsers(users_copy);
       emit('ready');
+    }
+  };
+
+  const busAction = (event) => {
+    if (me && state.name === 'bus' && me.name === state.busfahrer) {
+      setState({ ...state, busstate: 'pause_deal', action: event });
+      emit('busaction', event);
     }
   };
 
@@ -164,12 +176,32 @@ const Game = () => {
   //
 
   const handleOnKeyPress = (e) => {
-    if (e.key === ' ') {
-      e.preventDefault();
-      toggleReady();
+    switch (e.key) {
+      case ' ':
+      case 'Enter':
+        e.preventDefault();
+        toggleReady();
+        break;
+      case 'ArrowUp':
+      case 'w':
+      case 'k':
+        busAction('higher');
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'j':
+        busAction('lower');
+        break;
+      case 'ArrowRight':
+      case 'd':
+      case 'l':
+        busAction('equal');
+        break;
+      default:
+        break;
     }
   };
-  useEventListener('keypress', handleOnKeyPress);
+  useEventListener('keydown', handleOnKeyPress);
 
   const validatePlay = (idx) => {
     const rowFaces = getRowFaces(state.rowsPlayed + 1, stack);
@@ -239,6 +271,7 @@ const Game = () => {
         settings={settings}
         room={login.room}
         toggleReady={toggleReady}
+        busAction={busAction}
       />
       {stack.map((item, idx) => {
         return (

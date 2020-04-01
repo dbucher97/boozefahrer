@@ -1,4 +1,4 @@
-const { randomStack, shuffle } = require('./stack');
+const { randomStack } = require('./stack');
 
 const idleState = { name: 'idle', previousState: '' };
 const dealtState = {
@@ -6,14 +6,14 @@ const dealtState = {
   previousState: 'idle',
   rowsPlayed: 0,
   cardsPlayed: {},
-  timeLeft: 10,
+  timeLeft: 20,
 };
 const giveState = {
   ...dealtState,
   name: 'give',
   previousState: 'dealt',
   playedThisRow: {},
-  timeLeft: 10,
+  timeLeft: 60,
 };
 const whoState = {
   name: 'who',
@@ -27,6 +27,8 @@ const busState = {
   previousState: 'dealt',
   currentStack: 0,
   busfahrer: '',
+  busstate: '',
+  cardsDealt: [],
 };
 
 const number = (a) => {
@@ -52,10 +54,6 @@ const higher = (a, b) => {
 
 const eq = (a, b) => {
   return number(a[0]) === number(b[0]);
-};
-
-const highereq = (a, b) => {
-  return number(a[0]) >= number(b[0]);
 };
 
 class Game {
@@ -91,6 +89,14 @@ class Game {
 
     this.print(`${name} joined.`);
 
+    //DEBUG
+    // if (this.users.length == 2) {
+    //   this.state = { ...busState, busfahrer: this.users[0].name };
+    //   if (this.state.previousState !== 'bus') {
+    //     this.advanceState();
+    //   }
+    // }
+
     return { error: '' };
   }
 
@@ -105,20 +111,21 @@ class Game {
         }).disconnected
       ) {
         this.users = [];
-      }
-      if (this.state.name === 'who') {
-        const sidx = this.state.users.findIndex((name) => name === this.users[idx].name);
-        if (sidx >= 0) {
-          this.state.users.splice(sidx, 1);
-          if (this.state.users.length === 1) {
-            this.advanceState();
+      } else {
+        if (this.state.name === 'who') {
+          const sidx = this.state.users.findIndex((name) => name === this.users[idx].name);
+          if (sidx >= 0) {
+            this.state.users.splice(sidx, 1);
+            if (this.state.users.length === 1) {
+              this.advanceState();
+            }
           }
+        } else if (this.state.name === 'bus' && this.state.busfahrer === this.users[idx].name) {
+          this.state = idleState;
+          this.advanceState();
         }
-      } else if (this.state.name === 'bus' && this.state.busfahrer === this.users[idx].name) {
-        this.state = idleState;
-        this.advanceState();
+        this.updateUsers();
       }
-      this.updateUsers();
     }
     if (this.state.name === 'idle') {
       this.handleDisconnects();
@@ -159,7 +166,7 @@ class Game {
         }
         break;
       case 'dealt':
-        if (this.state.rowsPlayed === 1) {
+        if (this.state.rowsPlayed === 5) {
           const cardsPlayed = this.users
             .filter(({ disconnected }) => !disconnected)
             .map(
@@ -202,7 +209,12 @@ class Game {
         break;
       case 'who':
         this.state = { ...busState, busfahrer: this.state.users[0] };
-        setTimeout(() => this.advanceState(), 2000);
+        this.timeout = setTimeout(() => this.advanceState(), 800);
+        break;
+      case 'bus':
+        if (this.advanceBus()) {
+          this.state = idleState;
+        }
         break;
       default:
         this.state = idleState;
@@ -211,9 +223,59 @@ class Game {
     if (this.state.name === 'idle') {
       this.handleDisconnects();
     }
-    if (this.state.name === 'idle' || this.state.name === 'who' || this.state.name === 'bus') {
+    if (
+      this.state.name === 'idle' ||
+      this.state.name === 'who' ||
+      (this.state.name === 'bus' && this.state.previousState !== 'bus')
+    ) {
       this.shuffle();
     }
+  }
+
+  advanceBus() {
+    let cardsDealt = this.state.cardsDealt;
+    let busstate = 'wait';
+    let previousState = 'bus';
+    let currentStack = this.state.currentStack;
+    if (this.state.busstate === '') {
+      cardsDealt = [];
+      [...Array(5).keys()].map((idx) => cardsDealt.push({ stack: idx, zIndex: 0 }));
+      previousState = this.state.previousState;
+    } else if (this.state.busstate === 'pause_deal') {
+      const zIndex = this.state.cardsDealt.reduce(
+        (prev, curr) => (curr.stack === this.state.currentStack ? prev + 1 : prev),
+        0,
+      );
+      cardsDealt = [...this.state.cardsDealt, { stack: this.state.currentStack, zIndex: zIndex }];
+      busstate = 'pause_next';
+      this.timeout = setTimeout(() => this.advanceState(), 500);
+    } else if (this.state.busstate === 'pause_next') {
+      const zIndex = cardsDealt[cardsDealt.length - 1].zIndex;
+      const upper = this.stack[cardsDealt.length - 1];
+      const lower = this.stack[
+        cardsDealt.findIndex((card) => card.stack === currentStack && card.zIndex === zIndex - 1)
+      ];
+      if (
+        (this.state.action === 'higher' && higher(upper, lower)) ||
+        (this.state.action === 'equal' && eq(upper, lower)) ||
+        (this.state.action === 'lower' && higher(lower, upper))
+      ) {
+        currentStack += 1;
+      } else {
+        currentStack = 0;
+      }
+      if (currentStack >= 5 || this.stack.length === cardsDealt.length) {
+        return true;
+      }
+    }
+    this.state = {
+      ...this.state,
+      cardsDealt: cardsDealt,
+      currentStack: currentStack,
+      previousState: previousState,
+      busstate: busstate,
+    };
+    return false;
   }
 
   chooseBusfahrerLogic() {
@@ -236,7 +298,7 @@ class Game {
         this.updateState();
         this.state.round += 1;
       }
-    }, 3000);
+    }, 2000);
   }
 
   chooseBusfahrer() {
@@ -244,7 +306,7 @@ class Game {
       this.chooseBusfahrerLogic();
       this.timer = setInterval(() => {
         this.chooseBusfahrerLogic();
-      }, 4000);
+      }, 3000);
     }, 1000);
   }
 
@@ -325,6 +387,17 @@ class Game {
       }
       this.state.playedThisRow = { ...this.state.playedThisRow, ...cardPlayed };
       this.updateState();
+    }
+  }
+
+  busAction(id, text) {
+    if (this.state.name === 'bus' && this.state.busstate === 'wait') {
+      const user = this.getUser(id);
+      if (user && user.name === this.state.busfahrer) {
+        this.state = { ...this.state, busstate: 'pause_deal', action: text, previousState: 'bus' };
+        this.updateState();
+        this.timeout = setTimeout(() => this.advanceState(), 200);
+      }
     }
   }
 

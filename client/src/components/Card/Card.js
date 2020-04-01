@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Cards from './CardLoader';
-
 import './Card.css';
 import { getRow, getIdx0, getRowLength } from './../../shapes/Pyramid';
 import * as ui from './../../UIConstants';
@@ -111,9 +110,11 @@ const renderIdle = () => {
 
 const renderGive = () => {
   let zIndex = 0;
+  let opaqueBackground = false;
   if (state.playedThisRow[idx]) {
     zIndex = state.playedThisRow[idx].zIndex + 1;
     idx = state.playedThisRow[idx].onIdx;
+    opaqueBackground = true;
   }
   const row = getRow(idx);
   const idx0 = getIdx0(row);
@@ -125,6 +126,7 @@ const renderGive = () => {
       scale: ui.CARD_VIEW_SCALE,
       zIndex: 10 + 10 * zIndex,
       delay: (idx - idx0) * ui.TRANSITION_TIME_FLIP_UP,
+      opaqueBackground: opaqueBackground,
       customElevation: 100,
     };
   } else {
@@ -176,6 +178,49 @@ const renderWho = () => {
   return renderStack(render.fractional({ x: 0.5, y: 0.5 }), idx, cardsToStack, cardsInStack - cardsToStack);
 };
 
+const renderBus = () => {
+  if (state.cardsDealt.length > idx) {
+    const stack = state.cardsDealt[idx].stack;
+    const zIndex = state.cardsDealt[idx].zIndex;
+    const shift = state.currentStack - stack;
+    const isMe = state.busfahrer === me.name;
+    let fac = 0.01 * zIndex;
+    if (state.cardsDealt.length - 1 === idx && zIndex !== 0) {
+      fac += 0.15;
+    }
+    const pos = addPos(render.busCard(shift), render.relative({ x: 0, y: fac * ui.BUS_CARD_SCALE }));
+    return {
+      flipped: false,
+      zIndex: zIndex,
+      elevation: zIndex * 3,
+      delay: state.previousState !== 'bus' ? idx * 0.05 : 0,
+      scale: ui.BUS_CARD_SCALE,
+      opacity: isMe && shift > 0 ? ui.BACKGROUND_OPACITY : 1,
+      opaqueBackground:
+        zIndex > 0 && (state.cardsDealt.length - 1 !== idx || state.busstate !== 'pause_next'),
+      pos: pos,
+    };
+  }
+  const style = {
+    ...renderStack(
+      addPos(
+        { x: 0, y: -2 * ui.UI_PAD },
+        render.relative({ x: 0, y: -0.5 * ui.BUS_CARD_SCALE }),
+        render.fractional({ x: 0.5, y: 1 }),
+      ),
+      idx,
+      cardsToStack,
+      cardsInStack - cardsToStack,
+    ),
+    scale: ui.BUS_CARD_SCALE,
+  };
+  let zIndex = style.zIndex + state.cardsDealt.length;
+  if (idx === state.cardsDealt.length) {
+    zIndex += 50;
+  }
+  return { ...style, zIndex: zIndex };
+};
+
 const renderLayout = () => {
   switch (state.name) {
     case 'login':
@@ -188,6 +233,8 @@ const renderLayout = () => {
       return renderGive();
     case 'who':
       return renderWho();
+    case 'bus':
+      return renderBus();
     default:
       return renderStack(render.fractional({ x: 0.5, y: 0.5 }), idx, 0, cardsInStack);
   }
@@ -203,8 +250,9 @@ const Card = (props) => {
   cardsToUsers = settings.shape.total;
   cardsToStack = cardsToUsers + users.length * settings.playerCards;
   cardsInStack = ui.FULL_STACK - (settings.lowest - 2) * 4;
-  if (state.name === 'who') {
-    cardsToStack = Object.keys(state.cardsDealt).length;
+
+  if (state.name === 'who' || state.name === 'bus') {
+    cardsToStack = state.cardsDealt.length;
   }
   const [hover, setHover] = useState(false);
 
@@ -232,7 +280,7 @@ const Card = (props) => {
           : null
       }
     >
-      {state.cardsPlayed && state.cardsPlayed[props.idx] ? (
+      {style.opaqueBackground ? (
         <div className="card-inner-background" style={{ borderRadius: `${render.cardWidth / 20}px` }} />
       ) : null}
       <img

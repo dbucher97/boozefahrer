@@ -1,21 +1,21 @@
-const express = require("express");
-const favicon = require("serve-favicon");
-const http = require("http");
-const path = require("path");
+const express = require('express');
+const favicon = require('serve-favicon');
+const http = require('http');
+const path = require('path');
 //const cors = require("cors");
-const socketIo = require("socket.io");
+const socketIo = require('socket.io');
 
-const Game = require("./server/game");
+const Game = require('./server/game');
 
 const port = process.env.PORT || 4001;
 
 const app = express();
 
 // Serve React app
-app.use(favicon(path.join(__dirname, "./client/public", "favicon.ico")));
-app.use(express.static(path.join(__dirname, "./client/build")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "./client/build/index.html"));
+app.use(favicon(path.join(__dirname, './client/public', 'favicon.ico')));
+app.use(express.static(path.join(__dirname, './client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + './client/build/index.html'));
 });
 
 const server = http.createServer(app);
@@ -37,10 +37,10 @@ const cleanGames = () => {
 };
 
 //Socket.IO
-io.on("connection", (socket) => {
-  console.log(">>\tclient connected");
+io.on('connection', (socket) => {
+  console.log('>>\tclient connected');
 
-  socket.on("join", ({ room, name }, callback) => {
+  socket.on('join', ({ room, name }, callback) => {
     room = room.trim();
 
     cleanGames();
@@ -59,21 +59,28 @@ io.on("connection", (socket) => {
     console.log(`>>\tcurrently ${games.length} games.`);
   });
 
-  socket.on("ready", ({ room }) => {
+  socket.on('ready', ({ room }) => {
     const game = findGame(room);
     if (game) {
       game.toggleReady(socket.id);
     }
   });
 
-  socket.on("play card", ({ room, payload }) => {
+  socket.on('play card', ({ room, payload }) => {
     const game = findGame(room);
     if (game) {
       game.playCard(socket.id, payload);
     }
   });
 
-  socket.on("disconnect", () => {
+  socket.on('busaction', ({ room, payload }) => {
+    const game = findGame(room);
+    if (game) {
+      game.busAction(socket.id, payload);
+    }
+  });
+
+  socket.on('disconnect', () => {
     const g = games.findIndex((game) => game.getUser(socket.id) !== null);
     if (games[g]) {
       games[g].disconnected(socket.id);

@@ -1,0 +1,9 @@
+.emoji {
+  transition: all 0.2s;
+}
+
+.display {
+  transition: all 0.2s;
+  backface-visibility: hidden;
+}
+

@@ -187,6 +187,17 @@ const Render = class {
     );
   }
 
+  busCard(shift) {
+    return addPos(
+      this.compensate(ui.BUS_CARD_SCALE),
+      centered(this.fractional({ x: 0.5, y: 0.5 }), {
+        x: this.cardWidth * ui.BUS_CARD_SCALE,
+        y: this.cardHeight * ui.BUS_CARD_SCALE,
+      }),
+      this.relative({ x: shift * ui.BUS_CARD_SCALE * ui.CARD_SHAPE_X_PAD, y: 0 }),
+    );
+  }
+
   centeredText(text, maxWidth, style) {
     style.pos = centered(style.pos, { x: maxWidth, y: 0 });
     const compiledStyle = compileDefaultStyle(style);

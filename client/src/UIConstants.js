@@ -1,7 +1,7 @@
 export const CARD_ASPECT = 1.397;
 export const CARD_REL_HEIGHT = 0.14;
 
-export const CARD_LOGIN_SCALE = 1;
+export const CARD_LOGIN_SCALE = 1.3;
 export const CARD_LOGIN_RPOS = 1.1;
 export const LOGIN_ANCHOR = 0.6;
 export const LOGIN_WIDTH = 300;
@@ -43,3 +43,4 @@ export const ELEVATION_SCALE_COEFF = 0.01;
 
 export const MAX_PLAYERS = 9;
 export const HOVER_ELEVATION = 10;
+export const BUS_CARD_SCALE = 1.4;
