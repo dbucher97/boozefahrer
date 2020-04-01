@@ -190,7 +190,7 @@ const Render = class {
   centeredText(text, maxWidth, style) {
     style.pos = centered(style.pos, { x: maxWidth, y: 0 });
     const compiledStyle = compileDefaultStyle(style);
-    compiledStyle.fontSize = this.scaledFont(compiledStyle.fontSize);
+    compiledStyle.fontSize = this.scaled(compiledStyle.fontSize);
     return (
       <div className="centered-text" style={{ ...compiledStyle, width: maxWidth }}>
         {text}
@@ -200,10 +200,6 @@ const Render = class {
 
   scaled(val) {
     return (val * this.cardHeight) / 100;
-  }
-
-  scaledFont(val) {
-    return 6 + (val * this.cardHeight) / 120;
   }
 };
 

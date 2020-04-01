@@ -68,7 +68,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
   const renderUser = () => {
     const noShow = user.disconnected || hide;
     const pos = render.user(uidx, noShow);
-    const size = render.scaledFont(24);
+    const size = render.scaled(24);
     const checkboxPos = addPos(
       render.relative({
         x: -settings.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD,
@@ -91,7 +91,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
       >
         <div className="user-container" style={{ opacity: noShow ? 0 : 1 }}>
           <div className="box-inner-container">
-            <div className="user-title" style={{ fontSize: render.scaledFont(16) }}>
+            <div className="user-title" style={{ fontSize: render.scaled(16) }}>
               {user.name}
             </div>
           </div>
@@ -104,7 +104,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
   };
 
   const renderMe = () => {
-    const size = render.scaledFont(32);
+    const size = render.scaled(32);
     const noShow = user.disconnected || hide;
     const pos = render.userMe(noShow);
     const checkboxPos = addPos(
@@ -135,7 +135,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
           pos: { x: checkboxPos.x + size / 2, y: checkboxPos.y },
           rotateX: user.ready ? -91 : 0,
           opacity: user.ready ? 0 : 1,
-          fontSize: size,
+          fontSize: 32,
           clickable: true,
         })}
       </div>

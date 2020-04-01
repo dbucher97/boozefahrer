@@ -172,14 +172,13 @@ class Game {
             .filter(({ disconnected }) => !disconnected)
             .filter((_, idx) => cardsPlayed[idx] === maxCards);
           this.state = { ...whoState };
+          this.state.users = users.map(({ name }) => name);
           if (users.length > 1) {
-            this.state.users = users.map(({ name }) => name);
             this.chooseBusfahrer();
           } else {
             this.advanceState();
             return;
           }
-          this.shuffle();
         } else {
           this.state = {
             ...giveState,
@@ -211,8 +210,9 @@ class Game {
     this.updateState();
     if (this.state.name === 'idle') {
       this.handleDisconnects();
+    }
+    if (this.state.name === 'idle' || this.state.name === 'who' || this.state.name === 'bus') {
       this.shuffle();
-      this.updateStack();
     }
   }
 
