@@ -261,6 +261,9 @@ class Game {
         (this.state.action === 'lower' && higher(lower, upper))
       ) {
         currentStack += 1;
+        if (this.state.action === 'equal' && currentStack >= 2) {
+          return true;
+        }
       } else {
         currentStack = 0;
       }

@@ -108,9 +108,6 @@ const UserInterface = ({ state, render, settings, users, me, toggleReady, busAct
       {state.name === 'bus' && state.busfahrer !== me.name ? (
         <BusDisplay state={state} render={render} />
       ) : null}
-      {render.centeredText('Kais B-Day Edition! 🎂', 300, {
-        pos: addPos({ x: 170, y: -2 * ui.UI_PAD }, render.fractional({ x: 0, y: 1 })),
-      })}
     </div>
   );
 };

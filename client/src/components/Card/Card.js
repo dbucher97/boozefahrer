@@ -79,6 +79,7 @@ const renderDealt = () => {
       ...style,
       elevation: 20 * zIndex,
       zIndex: zIndex,
+      opaqueBackground: true,
       pos: addPos(style.pos, render.relative({ x: 0, y: 0.05 * zIndex })),
     };
   }
@@ -94,18 +95,29 @@ const renderDealt = () => {
 const renderLogin = () => {
   return {
     ...renderStack(
-      addPos(render.fractional({ x: 0.5, y: 0.5 }), render.relative({ x: -ui.CARD_LOGIN_SCALE, y: 0 }), {
-        x: -ui.UI_PAD / 2,
-        y: 0,
-      }),
+      addPos(render.fractional({ x: 0, y: 0.5 }), { x: -render.cardWidth, y: 0 }),
       idx,
       0,
-      5,
+      cardsInStack,
     ),
-    flipped: idx !== 0,
-    scale: ui.CARD_LOGIN_SCALE,
   };
 };
+
+// const renderLogin = () => {
+//   return {
+//     ...renderStack(
+//       addPos(render.fractional({ x: 0.5, y: 0.5 }), render.relative({ x: -ui.CARD_LOGIN_SCALE, y: 0 }), {
+//         x: -ui.UI_PAD / 2,
+//         y: 0,
+//       }),
+//       idx,
+//       0,
+//       5,
+//     ),
+//     flipped: idx !== 0,
+//     scale: ui.CARD_LOGIN_SCALE,
+//   };
+// };
 
 const renderIdle = () => {
   return {
@@ -119,11 +131,9 @@ const renderIdle = () => {
 
 const renderGive = () => {
   let zIndex = 0;
-  let opaqueBackground = false;
   if (state.playedThisRow[idx]) {
     zIndex = state.playedThisRow[idx].zIndex + 1;
     idx = state.playedThisRow[idx].onIdx;
-    opaqueBackground = true;
   }
   const row = getRow(idx);
   const idx0 = getIdx0(row);
@@ -135,7 +145,6 @@ const renderGive = () => {
       scale: ui.CARD_VIEW_SCALE,
       zIndex: 10 + 10 * zIndex,
       delay: (idx - idx0) * ui.TRANSITION_TIME_FLIP_UP,
-      opaqueBackground: opaqueBackground,
       customElevation: 100,
     };
   } else {

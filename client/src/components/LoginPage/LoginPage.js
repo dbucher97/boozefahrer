@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import * as ui from '../../UIConstants';
@@ -7,40 +7,28 @@ import { centered, addPos, compileDefaultStyle } from './../../Render';
 import './LoginPage.css';
 import './../../App.css';
 
+const card3D = require('./../Card/cards/3D.svg');
+
 const LoginPage = ({ state, render, onSubmit, error, disabled }) => {
   const [name, setName] = useState('');
   const [room, setRoom] = useState('');
 
-  const width = render.cardWidth * 2 * ui.CARD_LOGIN_SCALE;
-  const height = render.cardHeight * ui.CARD_LOGIN_SCALE;
+  const [cardVisible, setCardVisible] = useState(false);
+  useEffect(() => setTimeout(() => setCardVisible(true), 100), []);
+
+  const visible = state.name === 'login';
+
+  const titleClass = 'login-title' + (visible ? '' : ' login-title-invisible');
+  const cardClass = 'login-card' + (visible && cardVisible ? '' : ' login-card-invisible');
+  const containerClass = 'login-container' + (visible ? '' : ' login-container-invisible');
 
   return (
-    <div className="login-title" style={{ opacity: state.name === 'login' ? 1 : 0 }}>
-      {render.centeredText('Boozefahrer', 1000, {
-        pos: addPos(
-          render.relative({ x: 0, y: -ui.CARD_LOGIN_SCALE }),
-          centered(render.fractional({ x: 0.5, y: 0.5 }), { x: 0, y: 1.328 * 72 }),
-          render.fractional({ x: 0, y: state.name === 'login' ? 0 : -1 }),
-        ),
-        fontSize: 72,
-        fontWeight: '700',
-      })}
-      <div
-        className="box-container"
-        style={compileDefaultStyle({
-          pos: addPos(
-            centered(render.fractional({ x: 0.5, y: 0.5 }), {
-              x: render.cardWidth * ui.CARD_LOGIN_SCALE,
-              y: render.cardHeight * ui.CARD_LOGIN_SCALE,
-            }),
-            render.fractional({ x: 0, y: state.name === 'login' ? 0 : +1 }),
-          ),
-          width: width,
-          height: height,
-          opacity: state.name === 'login' ? 1 : 0,
-        })}
-      >
+    <div>
+      <div className={titleClass}>Boozefahrer</div>
+      <img src={card3D} className={cardClass} alt="" />
+      <div className={'box-container ' + containerClass}>
         <form
+          className="input-container"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit(name, room);
@@ -51,38 +39,17 @@ const LoginPage = ({ state, render, onSubmit, error, disabled }) => {
             placeholder="Raum"
             disabled={disabled}
             onChange={(e) => setRoom(e.target.value.trim())}
-            style={compileDefaultStyle({
-              pos: { x: ui.UI_PAD / 2, y: ui.UI_PAD / 2 },
-              width: width - 10 - ui.UI_PAD,
-              height: 30,
-            })}
           />
+          <div className="spacer" />
           <input
             type="text"
             placeholder="Name"
             disabled={disabled}
             onChange={(e) => setName(e.target.value.trim())}
             onKeyPress={(e) => (e.key === 'Enter' ? onSubmit(name, room) : null)}
-            style={compileDefaultStyle({
-              pos: { x: ui.UI_PAD / 2, y: ui.UI_PAD + 30 },
-              width: width - 10 - ui.UI_PAD,
-              height: 30,
-            })}
           />
-          <input
-            type="submit"
-            value="Go"
-            disabled={disabled}
-            style={compileDefaultStyle({
-              pos: { x: ui.UI_PAD / 2, y: height - 30 - ui.UI_PAD / 2 },
-              width: width - ui.UI_PAD,
-              height: 30,
-            })}
-          />
-          {render.centeredText(error, width - ui.UI_PAD, {
-            pos: { x: width / 2, y: height - 50 - ui.UI_PAD },
-            fontSize: 10,
-          })}
+          <div className="errormsg">{error}</div>
+          <input type="submit" value="Go" disabled={disabled} />
         </form>
       </div>
     </div>

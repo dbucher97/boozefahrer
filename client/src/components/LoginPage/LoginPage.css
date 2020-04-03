@@ -1,60 +1,97 @@
 .login-title {
+  position: absolute;
+  display: block;
+  bottom: 60%;
+  left: 0;
+  width: 100%;
+  height: 130px;
   color: white;
-  transition: transform 0.5s, opacity 0.5s;
+  text-align: center;
+  font-size: 72pt;
+  font-weight: 700;
+  transition: all 1s;
   filter: drop-shadow(0px 4px 15px rgba(0, 0, 0, 0.5));
 }
 
 .login-container {
-  display: flex;
-  flex-direction: column;
   position: absolute;
-  top: 0;
-  left: 0;
-  padding: 10px;
-  background: #344f5a;
-  justify-content: space-around;
-  transition: transform 0.5s, opacity 0.5s;
-  box-shadow: 0 4px 40px -20px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+  display: block;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-56px);
+  transition: all 1s !important;
+  width: 250px;
+  height: 200px;
 }
 
-.login-item {
-  margin: 10px;
-  height: 10px;
-  flex: 2;
+.login-card {
+  position: absolute;
+  top: 40%;
+  right: 50%;
+  height: 200px;
+  width: 143px;
+  transform: translateX(-71px);
+  transition: all 1s;
+  filter: drop-shadow(0px 4px 15px rgba(0, 0, 0, 0.5));
 }
 
-.login-item-errormsg {
-  font-size: 12pt;
+.input-container {
+  padding: 8%;
+  width: 84%;
+  height: 80%;
+}
+
+.login-card-invisible {
+  top: 110%;
+  transform: translateX(-300px) rotateZ(-540deg);
+}
+
+.login-container-invisible {
+  top: 110%;
+  opacity: 0;
+}
+
+.login-title-invisible {
+  bottom: 110%;
+  opacity: 0;
+}
+
+input {
+  width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.errormsg {
+  font-size: 9pt;
   text-align: center;
   color: white;
-  flex: 1;
+  padding-top: 10px;
+  width: 100%;
+  height: 22px;
 }
 
-.login-button:hover {
-  cursor: pointer;
+.spacer {
+  height: 12px;
 }
 
 input[type='text'] {
   background: transparent;
-  padding: 2px;
-  margin: 1px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 5px;
   color: white;
   transition: all 0.2s;
 }
 
 input[type='text']:focus {
-  margin: 0;
-  border: 3px solid white;
+  border: 2px solid white;
 }
 
 input[type='submit'] {
   background: transparent;
   color: white;
-  padding: 2px;
-  border: 2px solid white;
+  border: 1px solid white;
   border-radius: 5px;
   cursor: pointer;
   transition: 0.2s;
