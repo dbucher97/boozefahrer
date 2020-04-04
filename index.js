@@ -26,14 +26,18 @@ let games = [];
 
 const findGame = (room) => games.find((game) => game.room === room);
 
-const cleanGames = () => {
-  const games_copy = [...games];
-  games.map((game, idx) => {
-    if (!game && game.users.lenght === 0) {
-      games_copy.splice(idx, 1);
-    }
-  });
-  games = games_copy;
+const cleanGame = (g) => {
+  if (
+    games[g] &&
+    (!games[g].users ||
+      games[g].users.length === 0 ||
+      games[g].users.map(({ disconnected }) => disconnected).reduce((prev, curr) => prev && curr))
+  ) {
+    console.log(`>>\tClosed room ${games[g].room}`);
+    if (games[g].timer) clearInterval(games[g].timer);
+    if (games[g].timout) clearTimeout(games[g].timeout);
+    games.splice(g, 1);
+  }
 };
 
 //Socket.IO
@@ -42,8 +46,6 @@ io.on('connection', (socket) => {
 
   socket.on('join', ({ room, name }, callback) => {
     room = room.trim();
-
-    cleanGames();
 
     let game = findGame(room);
     if (!game) {
@@ -80,13 +82,23 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('settings', ({ room, payload }) => {
+    const game = findGame(room);
+    if (game) {
+      game.newSettings(payload);
+    }
+  });
+
   socket.on('disconnect', () => {
-    const g = games.findIndex((game) => game.getUser(socket.id) !== null);
-    if (games[g]) {
+    const g = games.findIndex((game) => {
+      return game.getUser(socket.id) !== undefined;
+    });
+    if (g >= 0) {
       games[g].disconnected(socket.id);
       if (games[g].users && games[g].users.length == 0) {
         games.splice(g, 1);
       }
+      cleanGame(g);
     }
   });
 });

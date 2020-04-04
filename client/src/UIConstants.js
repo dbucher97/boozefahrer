@@ -28,10 +28,10 @@ export const TRANSITION_TIME_FLIP_UP = 0.04;
 export const TRANSITION_TIME_STACK = 0.01;
 export const TRANSITION_RANDOMNESS = 0.02;
 
-export const USER_ME_CARD_SCALE = 1.3;
-export const USER_CARD_SCALE = 0.8;
+export const USER_ME_CARD_SCALE = 1.4;
+export const USER_CARD_SCALE = 0.75;
 export const USER_CARD_WIDTH = 3;
-export const UI_PAD = 30;
+export const UI_PAD = 15;
 
 export const CARD_VIEW_SCALE = 1.2;
 export const CARD_VIEW_X = 0.5;

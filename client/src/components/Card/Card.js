@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Cards from './CardLoader';
 import './Card.css';
-import { getRow, getIdx0, getRowLength } from './../../shapes/Pyramid';
+import { getShape } from './../../common/shape';
 import * as ui from './../../UIConstants';
 import { addPos, compileDefaultStyle } from './../../Render';
 
@@ -15,6 +15,7 @@ let settings;
 let cardsToUsers;
 let cardsToStack;
 let cardsInStack;
+let shape;
 
 const renderStack = (pos, idx, startIdx, cardsInStack) => {
   const stackIdx = cardsInStack - (idx - startIdx + 1);
@@ -26,8 +27,8 @@ const renderStack = (pos, idx, startIdx, cardsInStack) => {
 };
 
 const renderShape = () => {
-  const row = getRow(idx);
-  const idx0 = getIdx0(row);
+  const row = shape.getRow(idx);
+  const idx0 = shape.getIdx0(row);
   let transition;
   if (state.previousState === 'idle') {
     transition = (i) => i * ui.TRANSITION_TIME_DRAW;
@@ -107,7 +108,7 @@ const renderLogin = () => {
 //   return {
 //     ...renderStack(
 //       addPos(render.fractional({ x: 0.5, y: 0.5 }), render.relative({ x: -ui.CARD_LOGIN_SCALE, y: 0 }), {
-//         x: -ui.UI_PAD / 2,
+//         x: -render.uiPad / 2,
 //         y: 0,
 //       }),
 //       idx,
@@ -123,7 +124,7 @@ const renderIdle = () => {
   return {
     ...renderStack({ x: ui.STACK_X, y: ui.STACK_Y }, idx, 0, cardsInStack),
     delay: state.previousState
-      ? (3 * users.length + ui.PYRAMID_CARDS - 1 - idx) * ui.TRANSITION_TIME_STACK +
+      ? (settings.playerCards * users.length + shape.total - 1 - idx) * ui.TRANSITION_TIME_STACK +
         ui.TRANSITION_RANDOMNESS * Math.random()
       : 0,
   };
@@ -135,9 +136,9 @@ const renderGive = () => {
     zIndex = state.playedThisRow[idx].zIndex + 1;
     idx = state.playedThisRow[idx].onIdx;
   }
-  const row = getRow(idx);
-  const idx0 = getIdx0(row);
-  const rowLength = getRowLength(row);
+  const row = shape.getRow(idx);
+  const idx0 = shape.getIdx0(row);
+  const rowLength = shape.getRowLength(row);
   if (row === state.rowsPlayed + 1 && idx < 15) {
     return {
       pos: render.giveCard(idx - idx0, rowLength, zIndex),
@@ -222,7 +223,7 @@ const renderBus = () => {
   const style = {
     ...renderStack(
       addPos(
-        { x: 0, y: -2 * ui.UI_PAD },
+        { x: 0, y: -2 * render.uiPad },
         render.relative({ x: 0, y: -0.5 * ui.BUS_CARD_SCALE }),
         render.fractional({ x: 0.5, y: 1 }),
       ),
@@ -265,6 +266,7 @@ const Card = (props) => {
   idx = props.idx;
   me = props.me;
   settings = props.settings;
+  shape = getShape(settings.shape.name);
   cardsToUsers = settings.shape.total;
   cardsToStack = cardsToUsers + users.length * settings.playerCards;
   cardsInStack = ui.FULL_STACK - (settings.lowest - 2) * 4;

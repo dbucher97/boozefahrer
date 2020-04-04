@@ -1,4 +1,13 @@
 const { randomStack } = require('./stack');
+const { getShape } = require('./../client/src/common/shape');
+
+const defaultSettings = {
+  shape: { name: 'Pyramid', rows: 5, total: getShape('Pyramid').getTotal(5) },
+  playerCards: 3,
+  lowest: 4,
+  bussize: 5,
+  maxPlayers: 9,
+};
 
 const idleState = { name: 'idle', previousState: '' };
 const dealtState = {
@@ -63,12 +72,15 @@ class Game {
     this.room = room;
     this.users = [];
     this.state = idleState;
-    this.settings = { lowest: 4, playerCards: 3 };
+    this.settings = defaultSettings;
     this.stack = randomStack(this.settings.lowest);
     //  this.stateToken = true;
   }
 
   join(socket, name) {
+    if (this.users.length >= this.settings.maxPlayers) {
+      return { error: `"${this.room}" ist bereits voll!` };
+    }
     name = name.trim();
     const existing = this.users.find((user) => user.name === name);
 
@@ -81,9 +93,11 @@ class Game {
     this.users.push({ id: socket.id, name, ready: false, disconnected: false });
 
     socket.join(this.room);
-    this.updateStateOf(socket.id);
     this.updateUsers();
     this.updateStack();
+    this.updateSettings();
+
+    this.updateStateOf(socket.id);
 
     this.messageAll(`${name} ist beigetreten.`);
 
@@ -91,10 +105,11 @@ class Game {
 
     //DEBUG
     // if (this.users.length == 2) {
-    //   this.state = { ...busState, busfahrer: this.users[0].name };
-    //   if (this.state.previousState !== 'bus') {
-    //     this.advanceState();
-    //   }
+    // this.state = { ...busState, busfahrer: this.users[0].name };
+    // this.updateState();
+    // if (this.state.previousState !== 'bus') {
+    //   setTimeout(() => this.advanceState(), 1000);
+    // }
     // }
 
     return { error: '' };
@@ -105,27 +120,19 @@ class Game {
     if (idx !== -1) {
       this.print(`${this.users[idx].name} left.`);
       this.users[idx]['disconnected'] = true;
-      if (
-        this.users.reduce(({ disconnected }, user) => {
-          return { disconnected: disconnected && user.disconnected };
-        }).disconnected
-      ) {
-        this.users = [];
-      } else {
-        if (this.state.name === 'who') {
-          const sidx = this.state.users.findIndex((name) => name === this.users[idx].name);
-          if (sidx >= 0) {
-            this.state.users.splice(sidx, 1);
-            if (this.state.users.length === 1) {
-              this.advanceState();
-            }
+      if (this.state.name === 'who') {
+        const sidx = this.state.users.findIndex((name) => name === this.users[idx].name);
+        if (sidx >= 0) {
+          this.state.users.splice(sidx, 1);
+          if (this.state.users.length === 1) {
+            this.advanceState();
           }
-        } else if (this.state.name === 'bus' && this.state.busfahrer === this.users[idx].name) {
-          this.state = idleState;
-          this.advanceState();
         }
-        this.updateUsers();
+      } else if (this.state.name === 'bus' && this.state.busfahrer === this.users[idx].name) {
+        this.state = idleState;
+        this.advanceState();
       }
+      this.updateUsers();
     }
     if (this.state.name === 'idle') {
       this.handleDisconnects();
@@ -153,7 +160,11 @@ class Game {
     }
     switch (this.state.name) {
       case 'idle':
-        if (15 + this.users.length * this.settings.playerCards < this.stack.length) {
+        if (
+          getShape(this.settings.shape.name).getTotal(this.settings.shape.rows) +
+            this.users.length * this.settings.playerCards <
+          this.stack.length
+        ) {
           this.state = dealtState;
           setTimeout(() => {
             this.users.map((user) => (user.ready = false));
@@ -166,7 +177,7 @@ class Game {
         }
         break;
       case 'dealt':
-        if (this.state.rowsPlayed === 5) {
+        if (this.state.rowsPlayed === this.settings.shape.rows) {
           const cardsPlayed = this.users
             .filter(({ disconnected }) => !disconnected)
             .map(
@@ -239,7 +250,7 @@ class Game {
     let currentStack = this.state.currentStack;
     if (this.state.busstate === '') {
       cardsDealt = [];
-      [...Array(5).keys()].map((idx) => cardsDealt.push({ stack: idx, zIndex: 0 }));
+      [...Array(this.settings.bussize).keys()].map((idx) => cardsDealt.push({ stack: idx, zIndex: 0 }));
       previousState = this.state.previousState;
     } else if (this.state.busstate === 'pause_deal') {
       const zIndex = this.state.cardsDealt.reduce(
@@ -267,7 +278,7 @@ class Game {
       } else {
         currentStack = 0;
       }
-      if (currentStack >= 5 || this.stack.length === cardsDealt.length) {
+      if (currentStack >= this.settings.bussize || this.stack.length === cardsDealt.length) {
         return true;
       }
     }
@@ -347,6 +358,10 @@ class Game {
     this.io.to(this.room).emit('update stack', this.stack);
   }
 
+  updateSettings() {
+    this.io.to(this.room).emit('update settings', this.settings);
+  }
+
   messageAll(msg) {
     this.io.to(this.room).emit('message', msg);
   }
@@ -399,9 +414,21 @@ class Game {
       if (user && user.name === this.state.busfahrer) {
         this.state = { ...this.state, busstate: 'pause_deal', action: text, previousState: 'bus' };
         this.updateState();
-        this.timeout = setTimeout(() => this.advanceState(), 200);
+        this.timeout = setTimeout(() => this.advanceState(), 50);
       }
     }
+  }
+
+  newSettings(settings) {
+    if (
+      this.state.name === 'idle' &&
+      !this.users.map(({ ready }) => ready).reduce((prev, curr) => prev || curr)
+    ) {
+      this.settings = settings;
+      this.shuffle();
+      this.updateStack();
+    }
+    this.updateSettings();
   }
 
   print(...msg) {

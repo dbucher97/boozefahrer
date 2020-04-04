@@ -22,5 +22,4 @@ const getRowFaces = (row, faces) => {
   return getRowIdxs(row).map((idx) => ({ idx: idx, face: faces[idx] }));
 };
 
-export default { getRow, getIdx0, getRowIdxs, getRowFaces, getRowLength, getTotal };
-export { getRow, getIdx0, getRowIdxs, getRowFaces, getRowLength, getTotal };
+module.exports = { getRow, getIdx0, getRowIdxs, getRowFaces, getRowLength, getTotal };

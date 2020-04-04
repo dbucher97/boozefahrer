@@ -19,10 +19,10 @@ const EmojiButton = ({ emoji, pos, onClick, size, render, hide, opacity, clickab
   return (
     <img
       className="emoji"
-      draggable={false}
       src={emoji}
       onMouseEnter={clickable ? () => setHover(true) : null}
       onMouseLeave={() => setHover(false)}
+      draggable={false}
       alt=""
       style={compileDefaultStyle({ ...style, width: size, height: size, pos: pos })}
       onClick={() => {
@@ -58,8 +58,8 @@ const BusControl = ({ state, higher, lower, equal, render, hide }) => {
   let opacityUp = 0;
   let opacityBump = 0;
   let opacityDown = 0;
-  let shiftUp = -size * ui.CARD_SHAPE_Y_PAD - ui.UI_PAD;
-  let shiftDown = +size * ui.CARD_SHAPE_Y_PAD + ui.UI_PAD;
+  let shiftUp = -size * ui.CARD_SHAPE_Y_PAD - render.uiPad;
+  let shiftDown = +size * ui.CARD_SHAPE_Y_PAD + render.uiPad;
   if (state.name === 'bus') {
     opacityDown = 1;
     opacityUp = 1;
@@ -140,7 +140,7 @@ const BusDisplay = ({ state, render }) => {
   const size = render.cardWidth;
   let emoji;
   let rotation = state.busstate.includes('pause') ? 0 : 91;
-  const opactity = state.busstate.includes('pause');
+  const opactity = state.busstate.includes('pause') ? 1 : 0;
   switch (state.action) {
     case 'higher':
       emoji = thumbsup;
@@ -172,5 +172,25 @@ BusDisplay.propTypes = {
   render: PropTypes.object,
 };
 
+const BusCount = ({ state, render, settings }) => {
+  const opacity = state.busstate ? 1 : 0;
+  const pos = addPos(
+    { x: -25, y: -2 * render.uiPad - 12 },
+    render.relative({ y: 0, x: -ui.BUS_CARD_SCALE * 0.5 }),
+    render.fractional({ x: 0.5, y: 1 }),
+  );
+  const cardsInStack = ui.FULL_STACK - (settings.lowest - 2) * 4 - Object.keys(state.cardsDealt).length;
+  return render.centeredText(`${cardsInStack}`, 50, {
+    pos,
+    opacity,
+  });
+};
+
+BusCount.propTypes = {
+  state: PropTypes.object,
+  render: PropTypes.object,
+  settings: PropTypes.object,
+};
+
 export default BusControl;
-export { BusDisplay };
+export { BusDisplay, BusCount };

@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-import * as ui from '../../UIConstants';
-import { centered, addPos, compileDefaultStyle } from './../../Render';
-
 import './LoginPage.css';
 import './../../App.css';
 
 const card3D = require('./../Card/cards/3D.svg');
 
-const LoginPage = ({ state, render, onSubmit, error, disabled }) => {
+const LoginPage = ({ state, onSubmit, error, disabled }) => {
   const [name, setName] = useState('');
   const [room, setRoom] = useState('');
 
   const [cardVisible, setCardVisible] = useState(false);
-  useEffect(() => setTimeout(() => setCardVisible(true), 100), []);
+  useEffect(() => {
+    setTimeout(() => setCardVisible(true), 100);
+  }, []);
 
   const visible = state.name === 'login';
 
@@ -24,7 +23,15 @@ const LoginPage = ({ state, render, onSubmit, error, disabled }) => {
 
   return (
     <div>
-      <div className={titleClass}>Boozefahrer</div>
+      <div className={titleClass}>
+        <span role="img" aria-label="beer">
+          🍺
+        </span>{' '}
+        Boozefahrer{' '}
+        <span role="img" aria-label="bus">
+          🚍
+        </span>
+      </div>
       <img src={card3D} className={cardClass} alt="" />
       <div className={'box-container ' + containerClass}>
         <form
@@ -58,7 +65,6 @@ const LoginPage = ({ state, render, onSubmit, error, disabled }) => {
 
 LoginPage.propTypes = {
   state: PropTypes.object,
-  render: PropTypes.object,
   onSubmit: PropTypes.func,
   error: PropTypes.string,
   disabled: PropTypes.bool,

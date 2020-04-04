@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ui from './UIConstants';
-import Pyramid from './shapes/Pyramid';
+import { getShape } from './common/shape';
 
 import './App.css';
 
@@ -66,19 +66,16 @@ const Render = class {
     this.window = window;
     this.settings = settings;
     this.cardHeight = ui.CARD_REL_HEIGHT * window.height;
+    if (window.width / window.height < 1.6) {
+      this.cardHeight = (ui.CARD_REL_HEIGHT * window.width) / 1.6;
+    }
     this.cardWidth = this.cardHeight / ui.CARD_ASPECT;
+    this.uiPad = (ui.UI_PAD * this.cardHeight) / 100;
     this.users = users;
     this.me = me;
     this.totalRows = settings.shape.rows;
     this.playerCards = settings.playerCards;
-    switch (this.settings.name) {
-      case 'Pyramid':
-        this.shape = Pyramid;
-        break;
-      default:
-        this.shape = Pyramid;
-        break;
-    }
+    this.shape = getShape(settings.shape.name);
     // TODO support other shapes.
   }
 
@@ -112,7 +109,7 @@ const Render = class {
       addPos(
         this.fractional({ x: 0.5, y: 0.5 }),
         this.relative({ x: ridx * ui.CARD_SHAPE_X_PAD, y: (row - 1) * ui.CARD_SHAPE_Y_PAD }),
-        { x: 0, y: ui.UI_PAD },
+        { x: 0, y: this.uiPad },
       ),
       this.relative({
         x: (rowLength - 1) * ui.CARD_SHAPE_X_PAD + 1,
@@ -147,8 +144,8 @@ const Render = class {
   userMe(noShow) {
     return addPos(
       {
-        x: !noShow ? ui.UI_PAD : -ui.UI_PAD,
-        y: ui.UI_PAD,
+        x: !noShow ? this.uiPad : -this.uiPad,
+        y: this.uiPad,
       },
       this.relative({
         x: -(noShow ? this.playerCards * ui.USER_ME_CARD_SCALE * ui.CARD_SHAPE_X_PAD : 0),
@@ -169,8 +166,8 @@ const Render = class {
     return addPos(
       this.fractional({ x: 1, y: 0 }),
       {
-        x: !noShow ? -ui.UI_PAD : 2 * ui.UI_PAD,
-        y: ui.UI_PAD + ui.UI_PAD * uidx,
+        x: !noShow ? -this.uiPad : 2 * this.uiPad,
+        y: this.uiPad + this.uiPad * uidx * 0.8,
       },
       this.relative({
         x: noShow

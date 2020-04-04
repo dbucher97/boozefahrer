@@ -74,7 +74,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
         x: -settings.playerCards * ui.USER_CARD_SCALE * ui.CARD_SHAPE_X_PAD,
         y: ui.USER_CARD_SCALE / 2,
       }),
-      { x: -size - ui.UI_PAD / 2, y: -size / 2 },
+      { x: -size - render.uiPad / 2, y: -size / 2 },
     );
     const dimensions = render.relative({
       x: ui.USER_CARD_WIDTH * ui.USER_CARD_SCALE,
@@ -87,9 +87,10 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
           pos,
           width: dimensions.x,
           height: dimensions.y,
+          opacity: noShow ? 0 : 1,
         })}
       >
-        <div className="user-container" style={{ opacity: noShow ? 0 : 1 }}>
+        <div className="user-container">
           <div className="box-inner-container">
             <div className="user-title" style={{ fontSize: render.scaled(16) }}>
               {user.name}
@@ -113,7 +114,7 @@ const User = ({ state, settings, render, uidx, user, isMe, toggleReady }) => {
         x: ui.CARD_SHAPE_X_PAD * ui.USER_ME_CARD_SCALE + 0.5 * ui.USER_ME_CARD_SCALE,
         y: ui.USER_ME_CARD_SCALE,
       }),
-      { x: -size / 2, y: size / 2 + ui.UI_PAD },
+      { x: -size / 2, y: size / 2 + render.uiPad },
     );
 
     let text;

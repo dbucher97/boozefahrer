@@ -4,19 +4,20 @@ import Card from '../Card/Card';
 import UserInterface from '../UserInterface/UserInterface';
 import LoginPage from '../LoginPage/LoginPage';
 import useEventListener from '../../util/EventListener';
-import { getRowFaces } from '../../shapes/Pyramid';
 import { getMe } from '../../util/User';
 
 import { Render } from '../../Render';
 import useWindowDimensions from '../../util/WindowDimensions';
 
-import Pyramid from '../../shapes/Pyramid';
+const { getShape } = require('../../common/shape');
 
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
   : window.location.href;
 
 const io = require('socket.io-client');
+
+const fullStack = require('./fullstack');
 
 /* States
  *
@@ -36,7 +37,6 @@ const loginState = { name: 'login', previousState: '' };
 //   name: 'idle',
 //   previousState: 'login',
 // };
-const orderedStack = ['3D', 'AS', 'AC', 'AD', 'AH'];
 
 let socket;
 let render;
@@ -48,18 +48,18 @@ const Game = () => {
   const window = useWindowDimensions();
   const [state, setState] = useState(loginState);
   const [users, setUsers] = useState([me]);
-  const [stack, setStack] = useState(orderedStack);
+  const [stack, setStack] = useState(fullStack);
   const [login, setLogin] = useState({
-    room: '',
-    name: '',
-    // name: Math.random().toString(36).substring(6),
+    room: 'Test',
+    // name: '',
+    name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
   const [settings, setSettings] = useState({
-    shape: { name: 'Pyramid', rows: 5, total: Pyramid.getTotal(5) },
+    shape: { name: 'Pyramid', rows: 5, total: getShape('Pyramid').getTotal(5) },
     playerCards: 3,
-    lowest: 2,
+    lowest: 4,
   });
 
   if (state.name !== 'login') {
@@ -80,16 +80,17 @@ const Game = () => {
     });
     socket.on('update users', (users) => setUsers(users));
     socket.on('update stack', (stack) => setStack(stack));
+    socket.on('update settings', (settings) => setSettings(settings));
     socket.on('message', (msg) => console.log(msg));
     // debug;
-    // socket.emit(
-    //   'join',
-    //   {
-    //     room: login.room,
-    //     name: login.name,
-    //   },
-    //   () => null,
-    // );
+    socket.emit(
+      'join',
+      {
+        room: login.room,
+        name: login.name,
+      },
+      () => null,
+    );
   }, []);
 
   const toggleReady = () => {
@@ -150,7 +151,7 @@ const Game = () => {
   useEventListener('keydown', handleOnKeyPress);
 
   const validatePlay = (idx) => {
-    const rowFaces = getRowFaces(state.rowsPlayed + 1, stack);
+    const rowFaces = getShape(settings.shape.name).getRowFaces(state.rowsPlayed + 1, stack);
     const myFace = stack[idx];
     return rowFaces.filter(({ face }) => face[0] === myFace[0]);
   };
@@ -209,11 +210,21 @@ const Game = () => {
     }
   };
 
+  const setAndUpdateSettings = (settings) => {
+    setSettings(settings);
+    updateSettings(settings);
+  };
+
+  const updateSettings = (settings) => {
+    if (state.name === 'idle' && !users.map(({ ready }) => ready).reduce((prev, curr) => prev || curr)) {
+      emit('settings', settings);
+    }
+  };
+
   return (
     <div>
       <LoginPage
         state={state}
-        render={render}
         onSubmit={handleOnLoginSubmit}
         error={login.error}
         disabled={login.waitingForCallback || state.name !== 'login'}
@@ -222,11 +233,12 @@ const Game = () => {
         users={users}
         render={render}
         state={state}
-        me={me}
+        myName={me.name}
         settings={settings}
         room={login.room}
         toggleReady={toggleReady}
         busAction={busAction}
+        setSettings={setAndUpdateSettings}
       />
       {stack.map((item, idx) => {
         return (

@@ -1,5 +1,5 @@
 .user-container {
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
 
 .user-title {
