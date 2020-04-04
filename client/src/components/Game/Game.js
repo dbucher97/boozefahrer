@@ -44,11 +44,51 @@ let loginTimer;
 
 let me = { name: 'me', disconnected: true };
 
+const useAudio = (url) => {
+  const [queue, setQueue] = useState(0);
+  const [audio] = useState(new Audio(url));
+  const [playing, setPlaying] = useState(false);
+
+  const play = (num) => {
+    if (!num) {
+      num = 1;
+    }
+    if (!playing) {
+      setPlaying(true);
+      setQueue(queue + num - 1);
+    } else {
+      setQueue(queue + num);
+    }
+  };
+
+  useEffect(() => {
+    playing ? audio.play() : audio.pause();
+  }, [playing, audio]);
+
+  useEffect(() => {
+    const endedEventListener = () => {
+      if (queue === 0) {
+        setPlaying(false);
+      } else {
+        setQueue(queue - 1);
+        audio.play();
+      }
+    };
+    audio.addEventListener('ended', endedEventListener);
+    return () => {
+      audio.removeEventListener('ended', endedEventListener);
+    };
+  }, [audio, queue]);
+
+  return play;
+};
+
 const Game = () => {
   const window = useWindowDimensions();
   const [state, setState] = useState(loginState);
   const [users, setUsers] = useState([me]);
   const [stack, setStack] = useState(fullStack);
+  const playAudio = useAudio(require('./../../cardFan1.wav'));
   const [login, setLogin] = useState({
     room: 'Test',
     // name: '',
@@ -94,6 +134,7 @@ const Game = () => {
   }, []);
 
   const toggleReady = () => {
+    playAudio();
     if (
       me &&
       !(state.name === 'dealt' && state.previousState === 'idle') &&
