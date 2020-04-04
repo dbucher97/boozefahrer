@@ -1,4 +1,4 @@
-import Pyramid from './Pyramid';
+const Pyramid = require('./Pyramid');
 
 const getShape = (name) => {
   switch (name) {
@@ -8,4 +8,4 @@ const getShape = (name) => {
   }
 };
 
-export { getShape };
+module.exports = { getShape };

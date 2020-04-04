@@ -9,7 +9,7 @@ import { getMe } from '../../util/User';
 import { Render } from '../../Render';
 import useWindowDimensions from '../../util/WindowDimensions';
 
-const { getShape } = require('../../common/shape');
+import { getShape } from '../../common/shape';
 
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
@@ -134,7 +134,7 @@ const Game = () => {
   }, []);
 
   const toggleReady = () => {
-    playAudio();
+    // playAudio();
     if (
       me &&
       !(state.name === 'dealt' && state.previousState === 'idle') &&

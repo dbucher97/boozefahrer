@@ -1,5 +1,5 @@
 const { randomStack } = require('./stack');
-const { getShape } = require('./../client/src/common/shape');
+const { getShape } = require('./common/shape');
 
 const defaultSettings = {
   shape: { name: 'Pyramid', rows: 5, total: getShape('Pyramid').getTotal(5) },
