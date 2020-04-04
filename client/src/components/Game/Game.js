@@ -123,14 +123,14 @@ const Game = () => {
     socket.on('update settings', (settings) => setSettings(settings));
     socket.on('message', (msg) => console.log(msg));
     // debug;
-    socket.emit(
-      'join',
-      {
-        room: login.room,
-        name: login.name,
-      },
-      () => null,
-    );
+    // socket.emit(
+    //   'join',
+    //   {
+    //     room: login.room,
+    //     name: login.name,
+    //   },
+    //   () => null,
+    // );
   }, []);
 
   const toggleReady = () => {
