@@ -71,6 +71,7 @@ class Game {
     this.io = io;
     this.room = room;
     this.users = [];
+    this.netTimeouts = {};
     this.state = idleState;
     this.settings = defaultSettings;
     this.stack = randomStack(this.settings.lowest);
@@ -90,7 +91,7 @@ class Game {
       return { error: `"${this.room}" befindet sich momentan im Spiel!` };
     }
 
-    this.users.push({ id: socket.id, name, ready: false, disconnected: false });
+    this.users.push({ id: socket.id, name, ready: false, disconnected: false, netTimeout: null });
 
     socket.join(this.room);
     this.updateUsers();
@@ -139,6 +140,17 @@ class Game {
     }
   }
 
+  netIssue(id, callback) {
+    const idx = this.users.findIndex((user) => user.id === id);
+    if (idx !== -1) {
+      this.print(`${this.users[idx].name} triggered net problem.`);
+      this.users[idx].netTimeout = setTimeout(() => {
+        this.disconnected(id);
+        callback();
+      }, 15000);
+    }
+  }
+
   handleDisconnects() {
     const users_copy = [...this.users];
     this.users.map((user, idx) => {
@@ -166,7 +178,11 @@ class Game {
           this.stack.length
         ) {
           this.state = dealtState;
-          setTimeout(() => {
+          // this.playCardAudio(
+          //   getShape(this.settings.shape.name).getTotal(this.settings.shape.rows) +
+          //     this.settings.playerCards * this.users.length,
+          // );
+          this.timeout = setTimeout(() => {
             this.users.map((user) => (user.ready = false));
             this.updateUsers();
             this.advanceState();
@@ -351,7 +367,14 @@ class Game {
   }
 
   updateUsers() {
-    this.io.to(this.room).emit('update users', this.users);
+    this.io.to(this.room).emit(
+      'update users',
+      this.users.map(({ name, ready, disconnected }) => ({
+        name,
+        ready,
+        disconnected,
+      })),
+    );
   }
 
   updateStack() {
@@ -364,6 +387,14 @@ class Game {
 
   messageAll(msg) {
     this.io.to(this.room).emit('message', msg);
+  }
+
+  broadcastCardAudio(id) {
+    this.users.filter((user) => user.id !== id).map((user) => this.io.to(user.id).emit('card audio', 1));
+  }
+
+  playCardAudio(n) {
+    this.io.to(this.room).emit('card audio', n);
   }
 
   getUser(id) {
@@ -404,6 +435,7 @@ class Game {
         cardPlayed[idx].zIndex = sameOnIdx.length;
       }
       this.state.playedThisRow = { ...this.state.playedThisRow, ...cardPlayed };
+      this.broadcastCardAudio(id);
       this.updateState();
     }
   }

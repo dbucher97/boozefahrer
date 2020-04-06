@@ -8,11 +8,14 @@ import { getMe } from '../../util/User';
 
 import { Render } from '../../Render';
 import useWindowDimensions from '../../util/WindowDimensions';
+import { useCardAudio } from '../../util/Sound';
 
 import { getShape } from '../../common/shape';
 
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
+  : window.location.href.includes('10.21.254')
+  ? 'http://10.21.254.18:4001/'
   : window.location.href;
 
 const io = require('socket.io-client');
@@ -44,51 +47,13 @@ let loginTimer;
 
 let me = { name: 'me', disconnected: true };
 
-const useAudio = (url) => {
-  const [queue, setQueue] = useState(0);
-  const [audio] = useState(new Audio(url));
-  const [playing, setPlaying] = useState(false);
-
-  const play = (num) => {
-    if (!num) {
-      num = 1;
-    }
-    if (!playing) {
-      setPlaying(true);
-      setQueue(queue + num - 1);
-    } else {
-      setQueue(queue + num);
-    }
-  };
-
-  useEffect(() => {
-    playing ? audio.play() : audio.pause();
-  }, [playing, audio]);
-
-  useEffect(() => {
-    const endedEventListener = () => {
-      if (queue === 0) {
-        setPlaying(false);
-      } else {
-        setQueue(queue - 1);
-        audio.play();
-      }
-    };
-    audio.addEventListener('ended', endedEventListener);
-    return () => {
-      audio.removeEventListener('ended', endedEventListener);
-    };
-  }, [audio, queue]);
-
-  return play;
-};
+let timeout;
 
 const Game = () => {
-  const window = useWindowDimensions();
+  const win = useWindowDimensions();
   const [state, setState] = useState(loginState);
   const [users, setUsers] = useState([me]);
   const [stack, setStack] = useState(fullStack);
-  const playAudio = useAudio(require('./../../cardFan1.wav'));
   const [login, setLogin] = useState({
     room: 'Test',
     // name: '',
@@ -101,16 +66,24 @@ const Game = () => {
     playerCards: 3,
     lowest: 4,
   });
+  const [muted, setMuted] = useState(true);
+  const playCardAudio = useCardAudio();
 
   if (state.name !== 'login') {
     me = getMe(users, login.name);
     if (!me) me = users[0];
   }
-  render = new Render(window, settings, users, me);
+  render = new Render(win, settings, users, me);
 
   const emit = (msg, payload) => {
     socket.emit(msg, { room: login.room, payload });
   };
+
+  useEffect(() => {
+    const leave = () => socket.emit('leave');
+    window.addEventListener('beforeunload', leave);
+    return () => window.removeEventListener('beforeunload', leave);
+  }, []);
 
   useEffect(() => {
     socket = io(ENDPOINT);
@@ -122,6 +95,38 @@ const Game = () => {
     socket.on('update stack', (stack) => setStack(stack));
     socket.on('update settings', (settings) => setSettings(settings));
     socket.on('message', (msg) => console.log(msg));
+  }, []);
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+        setLogin({ ...login, error: null });
+      }
+    });
+    socket.on('connect_error', () => {
+      if (!timeout)
+        timeout = setTimeout(() => {
+          setState(loginState);
+          setLogin({ ...login, error: 'Verbindung unterbrochen!' });
+        }, 25000);
+    });
+    socket.on('reconnect', () => {
+      if (state.name !== 'login') {
+        socket.emit('rejoin', { room: login.room, name: login.name }, (success) => {
+          if (!success) {
+            setState(loginState);
+            setLogin({ ...login, error: 'Verbindung unterbrochen!' });
+          }
+        });
+      }
+    });
+    return () => {
+      socket.off('connect');
+      socket.off('connect_error');
+      socket.off('reconnect');
+    };
     // debug;
     // socket.emit(
     //   'join',
@@ -131,10 +136,14 @@ const Game = () => {
     //   },
     //   () => null,
     // );
-  }, []);
+    //
+  }, [login, state.name]);
+
+  useEffect(() => {
+    socket.on('card audio', (i) => (!muted ? playCardAudio(i) : null));
+  }, [playCardAudio, muted]);
 
   const toggleReady = () => {
-    // playAudio();
     if (
       me &&
       !(state.name === 'dealt' && state.previousState === 'idle') &&
@@ -203,6 +212,7 @@ const Game = () => {
     }
     const match = validatePlay(idx);
     if (match.length > 0) {
+      if (!muted) playCardAudio();
       let onIdx = match[0].idx;
       let zIndex = 0;
       if (match.length > 1) {

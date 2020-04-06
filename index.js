@@ -24,6 +24,8 @@ const io = socketIo(server);
 
 let games = [];
 
+let timersForRejoin = {};
+
 const findGame = (room) => games.find((game) => game.room === room);
 
 const cleanGame = (g) => {
@@ -42,7 +44,7 @@ const cleanGame = (g) => {
 
 //Socket.IO
 io.on('connection', (socket) => {
-  console.log('>>\tclient connected');
+  console.log(`>>\tconnected ${socket.id}`);
 
   socket.on('join', ({ room, name }, callback) => {
     room = room.trim();
@@ -59,6 +61,25 @@ io.on('connection', (socket) => {
     }
     callback(res);
     console.log(`>>\tcurrently ${games.length} games.`);
+  });
+
+  socket.on('rejoin', ({ room, name }, callback) => {
+    room = room.trim();
+    name = name.trim();
+    let game = findGame(room);
+    if (game) {
+      let user = game.users.find((user) => user.name === name);
+      if (user) {
+        if (user.netTimeout) {
+          clearTimeout(user.netTimeout);
+        }
+        user.id = socket.id;
+        game.print(`${name} rejoined`);
+        socket.join(room);
+        callback(true);
+      }
+    }
+    callback(false);
   });
 
   socket.on('ready', ({ room }) => {
@@ -89,16 +110,23 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('disconnect', () => {
+  socket.on('leave', () => {
     const g = games.findIndex((game) => {
       return game.getUser(socket.id) !== undefined;
     });
     if (g >= 0) {
       games[g].disconnected(socket.id);
-      if (games[g].users && games[g].users.length == 0) {
-        games.splice(g, 1);
-      }
       cleanGame(g);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`>>\tdisconnected ${socket.id}`);
+    const g = games.findIndex((game) => {
+      return game.getUser(socket.id) !== undefined;
+    });
+    if (g >= 0) {
+      games[g].netIssue(socket.id, () => cleanGame(g));
     }
   });
 });
