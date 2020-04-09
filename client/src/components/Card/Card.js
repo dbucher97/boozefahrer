@@ -89,18 +89,21 @@ const renderDealt = () => {
   } else if (idx < cardsToStack) {
     return renderUser();
   } else {
-    return renderStack({ x: ui.STACK_X, y: ui.STACK_Y }, idx, cardsToStack, cardsInStack - cardsToStack);
+    const pos = addPos(render.fractional({ x: 0, y: 1 }), render.relative({ x: 0.8, y: -0.5 }), {
+      x: render.uiPad,
+      y: -render.uiPad * 3 - 32,
+    });
+    return renderStack(pos, idx, cardsToStack, cardsInStack - cardsToStack);
   }
 };
 
 const renderLogin = () => {
+  const pos = addPos(render.fractional({ x: 0, y: 1 }), render.relative({ x: -0.8, y: -0.5 }), {
+    x: -render.uiPad,
+    y: -render.uiPad * 3 - 32,
+  });
   return {
-    ...renderStack(
-      addPos(render.fractional({ x: 0, y: 0.5 }), { x: -render.cardWidth, y: 0 }),
-      idx,
-      0,
-      cardsInStack,
-    ),
+    ...renderStack(pos, idx, 0, cardsInStack),
   };
 };
 
@@ -121,8 +124,12 @@ const renderLogin = () => {
 // };
 
 const renderIdle = () => {
+  const pos = addPos(render.fractional({ x: 0, y: 1 }), render.relative({ x: 0.8, y: -0.5 }), {
+    x: render.uiPad,
+    y: -render.uiPad * 3 - 32,
+  });
   return {
-    ...renderStack({ x: ui.STACK_X, y: ui.STACK_Y }, idx, 0, cardsInStack),
+    ...renderStack(pos, idx, 0, cardsInStack),
     delay: state.previousState
       ? (settings.playerCards * users.length + shape.total - 1 - idx) * ui.TRANSITION_TIME_STACK +
         ui.TRANSITION_RANDOMNESS * Math.random()

@@ -8,6 +8,8 @@ import * as ui from '../../UIConstants';
 
 import { addPos } from '../../Render';
 
+import './UserInterface.css';
+
 const UserInterface = ({
   state,
   render,
@@ -129,6 +131,12 @@ const UserInterface = ({
         <BusDisplay state={state} render={render} />
       ) : null}
       {state.name === 'bus' ? <BusCount state={state} render={render} settings={settings} /> : null}
+      <div className="greeting">
+        Msells B-Day Edition!{' '}
+        <span role="img" aria-label="glasses">
+          🥂
+        </span>
+      </div>
     </div>
   );
 };

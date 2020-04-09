@@ -88,6 +88,10 @@ input[type='text']:focus {
   border: 2px solid white;
 }
 
+input[type='text']:focus:disabled {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 input[type='submit'] {
   background: transparent;
   color: white;

@@ -45,7 +45,8 @@ let socket;
 let render;
 let loginTimer;
 
-let me = { name: 'me', disconnected: true };
+const startMe = { name: 'me', disconnected: true };
+let me = startMe;
 
 let timeout;
 
@@ -55,9 +56,9 @@ const Game = () => {
   const [users, setUsers] = useState([me]);
   const [stack, setStack] = useState(fullStack);
   const [login, setLogin] = useState({
-    room: 'Test',
-    // name: '',
-    name: Math.random().toString(36).substring(6),
+    room: '',
+    name: '',
+    // name: Math.random().toString(36).substring(6),
     error: null,
     waitingForCallback: false,
   });
@@ -109,6 +110,8 @@ const Game = () => {
       if (!timeout)
         timeout = setTimeout(() => {
           setState(loginState);
+          me = startMe;
+          setUsers([me]);
           setLogin({ ...login, error: 'Verbindung unterbrochen!' });
         }, 25000);
     });
@@ -117,6 +120,8 @@ const Game = () => {
         socket.emit('rejoin', { room: login.room, name: login.name }, (success) => {
           if (!success) {
             setState(loginState);
+            me = startMe;
+            setUsers([me]);
             setLogin({ ...login, error: 'Verbindung unterbrochen!' });
           }
         });
