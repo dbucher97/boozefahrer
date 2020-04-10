@@ -50,7 +50,11 @@ const renderUser = () => {
   const ridx = Math.floor(i / users.length);
   const delay = state.previousState === 'idle' ? 0.05 * idx : 0;
   if (users[uidx].disconnected) {
-    return renderStack({ x: ui.STACK_X, y: ui.STACK_Y }, 0, 0, 1);
+    const pos = addPos(render.fractional({ x: 0, y: 1 }), render.relative({ x: 0.8, y: -0.5 }), {
+      x: render.uiPad,
+      y: -render.uiPad * 3 - 32,
+    });
+    return renderStack(pos, 0, 0, 1);
   } else if (uidx === midx) {
     // Render me
     return {
