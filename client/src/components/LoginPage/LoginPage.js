@@ -43,7 +43,7 @@ const LoginPage = ({ state, onSubmit, error, disabled }) => {
         >
           <input
             type="text"
-            placeholder="Raum"
+            placeholder="Buslinie"
             disabled={disabled}
             onChange={(e) => setRoom(e.target.value.trim())}
           />
