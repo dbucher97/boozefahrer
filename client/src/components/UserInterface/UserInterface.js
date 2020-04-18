@@ -132,10 +132,10 @@ const UserInterface = ({
       ) : null}
       {state.name === 'bus' ? <BusCount state={state} render={render} settings={settings} /> : null}
       <div className="greeting">
-        {/*Msells B-Day Edition!{' '}
+        Sarahs B-Day Edition!&nbsp;
         <span role="img" aria-label="glasses">
-          🥂
-        </span>*/}
+          🔥
+        </span>
       </div>
     </div>
   );
