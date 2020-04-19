@@ -131,12 +131,12 @@ const UserInterface = ({
         <BusDisplay state={state} render={render} />
       ) : null}
       {state.name === 'bus' ? <BusCount state={state} render={render} settings={settings} /> : null}
-      <div className="greeting">
+      {/*<div className="greeting">
         Sarahs B-Day Edition!&nbsp;
         <span role="img" aria-label="glasses">
           🔥
         </span>
-      </div>
+      </div> */}
     </div>
   );
 };
