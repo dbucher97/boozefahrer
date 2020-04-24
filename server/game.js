@@ -464,7 +464,7 @@ class Game {
   }
 
   print(...msg) {
-    console.log(`[${this.room}]\t`, ...msg);
+    console.log(`[${this.room}:${this.users.length}]\t`, ...msg);
   }
 }
 

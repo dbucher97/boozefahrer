@@ -44,7 +44,7 @@ const cleanGame = (g) => {
 
 //Socket.IO
 io.on('connection', (socket) => {
-  console.log(`>>\tconnected ${socket.id}`);
+  // console.log(`>>\tconnected ${socket.id}`);
 
   socket.on('join', ({ room, name }, callback) => {
     room = room.trim();
@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
       games.push(game);
     }
     callback(res);
-    console.log(`>>\tcurrently ${games.length} games.`);
+    // console.log(`>>\tcurrently ${games.length} games.`);
   });
 
   socket.on('rejoin', ({ room, name }, callback) => {
@@ -121,7 +121,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log(`>>\tdisconnected ${socket.id}`);
+    // console.log(`>>\tdisconnected ${socket.id}`);
     const g = games.findIndex((game) => {
       return game.getUser(socket.id) !== undefined;
     });
