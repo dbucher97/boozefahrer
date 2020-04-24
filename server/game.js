@@ -184,6 +184,7 @@ class Game {
           // );
           this.timeout = setTimeout(() => {
             this.users.map((user) => (user.ready = false));
+            this.print(`New game started with ${this.users.map(({ name }) => name).join(', ')}.`);
             this.updateUsers();
             this.advanceState();
           }, 1000);
