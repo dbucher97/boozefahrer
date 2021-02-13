@@ -41,6 +41,6 @@ export const BACKGROUND_OPACITY = 0.1;
 
 export const ELEVATION_SCALE_COEFF = 0.01;
 
-export const MAX_PLAYERS = 9;
+export const MAX_PLAYERS = 12;
 export const HOVER_ELEVATION = 10;
 export const BUS_CARD_SCALE = 1.4;
