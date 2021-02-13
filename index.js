@@ -2,7 +2,7 @@ const express = require('express');
 const favicon = require('serve-favicon');
 const http = require('http');
 const path = require('path');
-//const cors = require("cors");
+// const cors = require("cors");
 const socketIo = require('socket.io');
 
 const Game = require('./server/game');
@@ -29,12 +29,11 @@ let timersForRejoin = {};
 const findGame = (room) => games.find((game) => game.room === room);
 
 const cleanGame = (g) => {
-  if (
-    games[g] &&
-    (!games[g].users ||
-      games[g].users.length === 0 ||
-      games[g].users.map(({ disconnected }) => disconnected).reduce((prev, curr) => prev && curr))
-  ) {
+  if (games[g] &&
+      (!games[g].users || games[g].users.length === 0 ||
+       games[g]
+           .users.map(({disconnected}) => disconnected)
+           .reduce((prev, curr) => prev && curr))) {
     console.log(`>>\tClosed room ${games[g].room}`);
     if (games[g].timer) clearInterval(games[g].timer);
     if (games[g].timout) clearTimeout(games[g].timeout);
@@ -42,11 +41,11 @@ const cleanGame = (g) => {
   }
 };
 
-//Socket.IO
+// Socket.IO
 io.on('connection', (socket) => {
   // console.log(`>>\tconnected ${socket.id}`);
 
-  socket.on('join', ({ room, name }, callback) => {
+  socket.on('join', ({room, name}, callback) => {
     room = room.trim();
 
     let game = findGame(room);
@@ -63,7 +62,7 @@ io.on('connection', (socket) => {
     // console.log(`>>\tcurrently ${games.length} games.`);
   });
 
-  socket.on('rejoin', ({ room, name }, callback) => {
+  socket.on('rejoin', ({room, name}, callback) => {
     room = room.trim();
     name = name.trim();
     let game = findGame(room);
@@ -82,28 +81,28 @@ io.on('connection', (socket) => {
     callback(false);
   });
 
-  socket.on('ready', ({ room }) => {
+  socket.on('ready', ({room}) => {
     const game = findGame(room);
     if (game) {
       game.toggleReady(socket.id);
     }
   });
 
-  socket.on('play card', ({ room, payload }) => {
+  socket.on('play card', ({room, payload}) => {
     const game = findGame(room);
     if (game) {
       game.playCard(socket.id, payload);
     }
   });
 
-  socket.on('busaction', ({ room, payload }) => {
+  socket.on('busaction', ({room, payload}) => {
     const game = findGame(room);
     if (game) {
       game.busAction(socket.id, payload);
     }
   });
 
-  socket.on('settings', ({ room, payload }) => {
+  socket.on('settings', ({room, payload}) => {
     const game = findGame(room);
     if (game) {
       game.newSettings(payload);

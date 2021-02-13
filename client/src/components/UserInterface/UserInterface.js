@@ -1,14 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-
-import User from '../User/User';
-import BusControl, { BusDisplay, BusCount } from '../BusControl/BusControl';
-import Settings from '../Settings/Settings';
-import * as ui from '../../UIConstants';
-
-import { addPos } from '../../Render';
-
 import './UserInterface.css';
+
+import PropTypes from 'prop-types';
+import React from 'react';
+
+import {addPos} from '../../Render';
+import * as ui from '../../UIConstants';
+import BusControl, {BusCount, BusDisplay} from '../BusControl/BusControl';
+import Settings from '../Settings/Settings';
+import User from '../User/User';
 
 const UserInterface = ({
   state,
@@ -22,8 +21,8 @@ const UserInterface = ({
   setSettings,
 }) => {
   const midx = Math.max(
-    users.findIndex((user) => user.name === myName),
-    0,
+      users.findIndex((user) => user.name === myName),
+      0,
   );
 
   const usersCopy = [...users];
@@ -33,82 +32,66 @@ const UserInterface = ({
   const mockUsers = [
     ...users,
     ...[...Array(ui.MAX_PLAYERS - users.length).keys()].map(() => {
-      return { disconnected: true };
+      return {disconnected: true};
     }),
   ];
 
   const statusText = () => {
-    let pos = addPos(render.fractional({ x: 0.5, y: 0 }), { x: 0, y: ui.UI_PAD });
+    let pos = addPos(render.fractional({x: 0.5, y: 0}), {x: 0, y: ui.UI_PAD});
     let text;
     let fontSize = 32;
     if (state.name === 'login') {
       fontSize = 48;
     } else if (state.name === 'idle') {
       fontSize = 48;
-      pos = addPos(pos, render.fractional({ x: 0, y: 0.15 }));
-      text = (
-        <span>
-          Willkommen in <b>{room}</b>!
-        </span>
-      );
+      pos = addPos(pos, render.fractional({x: 0, y: 0.15}));
+      text = (<span>Willkommen in <b>{room}</b>!
+        </span>);
     } else if (state.name === 'give') {
-      text = (
-        <span>
-          Karten legen!
-          <br />
-          <b>{state.timeLeft}</b>
-        </span>
-      );
+      text = (<span>Karten legen!<br /><b>{state.timeLeft}</b>
+        </span>);
     } else if (state.name === 'dealt' && state.previousState !== 'idle') {
-      text = (
-        <span>
-          Schlücke trinken!
-          <br />
-          <b>{state.timeLeft}</b>
-        </span>
-      );
+      text = (<span>Schlücke trinken!<br />
+              <b>{state.timeLeft}</b>
+        </span>);
     } else if (state.name === 'who') {
       text = (
         <span>
           Wer muss Busfahren?
           <br />
-          {state.users
-            .map((name) => <b key={name}>{name}</b>)
+          {
+        state.users.map(
+            (name) => <b key = {name}>{name}<
+                /b>)
             .reduce((prev, curr) => [prev, ' oder ', curr])}
           ?
-        </span>
-      );
+        </span>);
     } else if (state.name === 'bus') {
-      fontSize = 48;
-      if (state.busfahrer === myName) {
-        text = (
-          <span>
-            <b>Du</b> fährst Bus!
-          </span>
-        );
-      } else {
-        text = (
-          <span>
-            <b>{state.busfahrer}</b> fährt Bus!
-          </span>
-        );
-      }
+        fontSize = 48;
+        if (state.busfahrer === myName) {
+          text = (<span><b>Du</b> fährst Bus!
+          </span>);
+        } else {
+          text = (<span><b>{state.busfahrer}</b> fährt Bus!
+          </span>);
+        }
     } else {
-      return null;
+        return null;
     }
     return render.centeredText(text, render.fractional({ x: 1 / 3, y: 0 }).x, {
       pos,
       fontSize: fontSize,
       opacity: state.name === 'login' ? 0 : 1,
     });
-  };
+    };
 
   return (
     <div>
       {/* <div className={"sweden swedenh"} />
       <div className={"sweden swedenv"} /> */}
       {statusText()}
-      <Settings state={state} users={users} settings={settings} setSettings={setSettings} />
+      <Settings state={state} users={users} settings={settings} setSettings={
+      setSettings} />
       {mockUsers.map((user, idx) => (
         <User
           state={state}
@@ -120,8 +103,8 @@ const UserInterface = ({
           uidx={idx - 1}
           toggleReady={toggleReady}
         />
-      ))}
-      <BusControl
+      ))
+  } {' '} < BusControl
         state={state}
         render={render}
         higher={() => busAction('higher')}
@@ -131,16 +114,19 @@ const UserInterface = ({
       />
       {state.name === 'bus' && state.busfahrer !== myName ? (
         <BusDisplay state={state} render={render} />
-      ) : null}
-      {state.name === 'bus' ? <BusCount state={state} render={render} settings={settings} /> : null}
-      {/*<div className="greeting">
-        Poros B-Day Edition!&nbsp;
+      ) : null
+} {' '} {
+  state.name === 'bus' ?
+      <BusCount state = {state} render = {render} settings =
+       { settings
+       } /> : null}
+      <div className="greeting">
+        Für den kleinen Dirk!&nbsp;
         <span role="img" aria-label="glasses">
-          🥳
+          👶
         </span>
-      </div*/}
-    </div>
-  );
+      </div>
+    </div>);
 };
 
 UserInterface.propTypes = {
