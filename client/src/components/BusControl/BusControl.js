@@ -6,9 +6,9 @@ import * as ui from './../../UIConstants';
 
 import './BusControl.css';
 
-const thumbsup = require('./emojis/thumbsup.svg');
-const thumbsdown = require('./emojis/thumbsdown.svg');
-const fistbump = require('./emojis/fistbump.svg');
+import thumbsup from './emojis/thumbsup.svg';
+import thumbsdown from './emojis/thumbsdown.svg';
+import fistbump from './emojis/fistbump.svg';
 
 const EmojiButton = ({ emoji, pos, onClick, size, render, hide, opacity, clickable }) => {
   const [hover, setHover] = useState(false);
@@ -23,7 +23,7 @@ const EmojiButton = ({ emoji, pos, onClick, size, render, hide, opacity, clickab
       onMouseEnter={clickable ? () => setHover(true) : null}
       onMouseLeave={() => setHover(false)}
       draggable={false}
-      alt=""
+      alt="EMOJI"
       style={compileDefaultStyle({ ...style, width: size, height: size, pos: pos })}
       onClick={() => {
         if (clickable) {

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import './LoginPage.css';
 import './../../App.css';
 
-const card3D = require('./../Card/cards/3D.svg');
+import card3D from './../Card/cards/3D.svg';
 
 const LoginPage = ({ state, onSubmit, error, disabled }) => {
   const [name, setName] = useState('');
