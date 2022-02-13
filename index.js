@@ -20,7 +20,11 @@ app.get('*', (req, res) => {
 
 const server = http.createServer(app);
 
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: "*"
+  }
+});
 
 let games = [];
 
