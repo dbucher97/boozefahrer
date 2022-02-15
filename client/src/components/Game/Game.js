@@ -12,10 +12,9 @@ import { useCardAudio } from '../../util/Sound';
 
 import { getShape } from '../../common/shape';
 
+// Dynamic Endpoint if running development server
 const ENDPOINT = window.location.href.includes('localhost')
   ? 'http://localhost:4001/'
-  : window.location.href.includes('10.21.254')
-  ? 'http://10.21.254.18:4001/'
   : window.location.href;
 
 const io = require('socket.io-client');

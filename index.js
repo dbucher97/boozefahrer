@@ -3,7 +3,8 @@ const favicon = require('serve-favicon');
 const http = require('http');
 const path = require('path');
 // const cors = require("cors");
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
+
 
 const Game = require('./server/game');
 
@@ -14,30 +15,30 @@ const app = express();
 // Serve React app
 app.use(favicon(path.join(__dirname, './client/public', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, './client/build')));
-app.get('*', (req, res) => {
+app.get('*', (_, res) => {
   res.sendFile(path.join(__dirname + './client/build/index.html'));
 });
 
 const server = http.createServer(app);
 
-const io = socketIo(server, {
+const io = new Server(server, {
   cors: {
-    origin: "*"
+    origin: "http://localhost:3000",
   }
 });
 
 let games = [];
 
-let timersForRejoin = {};
+// let timersForRejoin = {};
 
 const findGame = (room) => games.find((game) => game.room === room);
 
 const cleanGame = (g) => {
   if (games[g] &&
       (!games[g].users || games[g].users.length === 0 ||
-       games[g]
-           .users.map(({disconnected}) => disconnected)
-           .reduce((prev, curr) => prev && curr))) {
+       games[g].users
+        .map(({disconnected}) => disconnected)
+        .reduce((prev, curr) => prev && curr))) {
     console.log(`>>\tClosed room ${games[g].room}`);
     if (games[g].timer) clearInterval(games[g].timer);
     if (games[g].timout) clearTimeout(games[g].timeout);

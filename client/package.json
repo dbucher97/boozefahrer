@@ -4,18 +4,17 @@
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.28",
-    "@fortawesome/free-solid-svg-icons": "^5.13.0",
+    "@fortawesome/free-solid-svg-icons": "^6.0.0",
     "@fortawesome/react-fontawesome": "^0.1.9",
     "@testing-library/jest-dom": "^5.16.2",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "create-react-app": "~1.2.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "create-react-app": "^5.0.0",
     "global": "^4.4.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-playing-cards": "^0.6.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "react-scripts": "^5.0.0",
-    "socket.io-client": "^2.3.0"
+    "socket.io-client": "^4.4.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -41,8 +40,8 @@
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "eslint": "^8.9.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.19.0",
     "prettier": "^2.0.1"
   }
