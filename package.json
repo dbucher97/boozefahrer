@@ -18,7 +18,7 @@
     "heroku-postbuild": "cd client && yarn && yarn build"
   },
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "serve-favicon": "^2.5.0",
     "socket.io": "^4.4.0"
   }
