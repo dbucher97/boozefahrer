@@ -2,5 +2,5 @@
 A quarantine drinking game made for lockdown Zoom sessions with friends.
 
 A socket.io/react/node multiplayer card game.
-# [Currently hosted on Heroku](https://boozefahrer.herokuapp.com)
+<!-- [Currently hosted on Heroku](https://boozefahrer.herokuapp.com) -->
 Currently not hosted anymore due to heroku's change of free plans
