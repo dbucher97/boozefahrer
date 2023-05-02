@@ -8,7 +8,7 @@ const { Server } = require('socket.io');
 
 const Game = require('./server/game');
 
-const port = process.env.PORT || 4001;
+const port = process.env.PORT || 8080;
 
 const app = express();
 

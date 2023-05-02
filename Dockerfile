@@ -7,4 +7,4 @@ RUN yarn install
 RUN yarn build
 CMD ["node", "index.js"]
 WORKDIR /app
-EXPOSE 4001
+EXPOSE 8080
